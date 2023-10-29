@@ -10,7 +10,7 @@ const url = `mongodb://localhost:27017/testModel`
 ConnectDatabase(url)
 
 
-app.use(Auth_routes, Category_routes) 
+
 
 // Middlewares
 // /* To handle invalid JSON data request */
@@ -39,6 +39,8 @@ app.use(express.json());
 // // res.send("hello world")
 // res.json(allData)
 // })
+
+app.use(Auth_routes, Category_routes)
 app.listen(port, () => {
     console.log(`server running on http://localhost:${port}`);
 })
