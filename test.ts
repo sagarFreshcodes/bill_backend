@@ -1,35 +1,26 @@
-function separateObject(inputObj: any, keysArray: { [key: string]: any }[]): any {
-    const resultObj: any = {};
+function calculateOffset(limit: any = 5, pageNo: any = 0): number {
+    // Ensure that limit and pageNo are valid numbers
+    limit = Number(limit);
+    pageNo = Number(pageNo);
 
-    for (const keyObj of keysArray) {
-        const key = Object.keys(keyObj)[0];
-        const defaultValue = keyObj[key];
-
-        if (inputObj.hasOwnProperty(key)) {
-            resultObj[key] = inputObj[key];
-        } else {
-            resultObj[key] = defaultValue;
-        }
+    // Check if the conversion to numbers was successful, otherwise use default values
+    if (isNaN(limit) || limit <= 0) {
+        limit = 5; // Default limit
     }
 
-    return resultObj;
+    if (isNaN(pageNo) || pageNo < 0) {
+        pageNo = 0; // Default page number
+    }
+
+    // Calculate the offset based on the limit and page number
+    const offset = limit * pageNo;
+
+    return offset;
 }
 
-const inputObj = {
-    user_name: 'name====',
-    email: 'emailll',
-    password: 'password',
-    role: 0
-};
+// Example usage:
+const limit = ""; // Default limit
+const pageNo = "0"; // Default page number
 
-const keysArray = [
-    { user_name: "_" },
-    { email: "_" },
-    { password: "_" },
-    { roleId: "_" },
-    { status: "45" },
-    { remember_token: "ok" }
-];
-
-const result = separateObject(inputObj, keysArray);
-console.log(result);
+const offset = calculateOffset(limit, pageNo);
+console.log(`Offset: ${offset}`); // This will output "Offset: 0"

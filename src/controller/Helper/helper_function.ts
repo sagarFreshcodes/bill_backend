@@ -1,13 +1,13 @@
 import { Response } from "express";
-import { messageData } from "../../Constant/message"; 
-import { EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
+import { messageData } from "../../Constant/message";
+import { AppDataSource } from "../../database/databaseConnection";
+import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
 export const SuccessResponce = (res: Response, data: any, message: any) => {
     res.status(200).json({
         message: message,
         data: data
     })
 }
-
 
 export const ErrorResponce = (res: Response, data: any, message: any) => {
     res.status(500).json({
@@ -16,50 +16,124 @@ export const ErrorResponce = (res: Response, data: any, message: any) => {
     })
 }
 
+export function Offset(limit: any = 5, pageNo: any = 0): number {
+    // Ensure that limit and pageNo are valid numbers
+    limit = Number(limit);
+    pageNo = Number(pageNo);
 
-// export const UpdateRecord = (Repository:Repository<T>, id:number, objectForUpadate:any, res:Response )=>{
-//     [Repository].update(id, objectForUpadate).then(async (response: any) => {
-//         const updatedRecord = await [Repository].findOneBy({ id: id });
-//         SuccessResponce(res, updatedRecord, messageData.USER_UPDATE_SUCCESSFULL)
-//     }).catch((error: any) => {
-//         ErrorResponce(res, error, messageData.UNKNOWN)
-//     })
-// }
+    // Check if the conversion to numbers was successful, otherwise use default values
+    if (isNaN(limit) || limit <= 0) {
+        limit = 5; // Default limit
+    }
 
-export async function AddRecord<T extends ObjectLiteral>(
-    repository: Repository<T>, 
-    tableObject:any,
-    res: Response
+    if (isNaN(pageNo) || pageNo < 0) {
+        pageNo = 0; // Default page number
+    }
+
+    // Calculate the offset based on the limit and page number
+    const offset = limit * pageNo;
+
+    return offset;
+}
+export async function GetRecord<T extends ObjectLiteral>(
+    repository: Repository<T>,
+    res: Response,
+    Model: any,
+    objectForAdd: any
 ): Promise<T | null> {
-    try { 
-        const userInserted = await repository.save(tableObject);
-        SuccessResponce(res, userInserted, messageData.USER_ADD_SUCCESSFULL)
-        return null; // Return the saved entity
+    try {
+        // const record = await repository.find();
+        const { limit, pageNo, orderBy, search } = objectForAdd
+        const order = orderBy.order || "DESC"
+        const fieldName = orderBy.fieldName || "id"
+        const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
+
+        const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
+        const conditions = entityMetadata.columns
+            .filter((column) => !excludedColumns.includes(column.propertyName))
+            .map((column) => {
+
+                return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal`
+
+            })
+            .join(' OR '); 
+        const [list, count] = await repository
+            .createQueryBuilder("users")
+            // .leftJoinAndSelect('users.role', 'role')
+            // .andWhere('users.id !=:id', { id: 1 })
+            .andWhere(
+                search && search !== ''
+                    ? conditions
+                    : '1=1',
+                { search: `%${search}%` }
+            )
+            .skip(Offset(limit, pageNo))
+            .take(limit)
+            .orderBy(fieldName, order, "NULLS LAST")
+            .getManyAndCount();
+
+
+        SuccessResponce(res, { data:list, total_record:count }, messageData.USER_GET_SUCCESSFULL)
+        return null;
     } catch (error) {
-        // Handle the error here
-        console.error(error);
+        ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }
 }
 
 
+export async function AddRecord<T extends ObjectLiteral>(
+    repository: Repository<T>,
+    tableObject: any,
+    res: Response
+): Promise<T | null> {
+    try {
+        const userInserted = await repository.save(tableObject);
+        SuccessResponce(res, userInserted, messageData.USER_ADD_SUCCESSFULL)
+        return null; // Return the saved entity
+    } catch (error) {
+        // Handle the error here 
+        ErrorResponce(res, error, messageData.UNKNOWN)
+        return null;
+    }
+}
 
 export async function UpdateRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     recordId: any,
     updatedData: Partial<T>,
-    res: Response
+    res: Response,
+    Model: any
 ): Promise<UpdateResult | null> {
     try {
         const result = await repository.update(recordId, updatedData);
-        const updatedRecord = await repository.findOneBy({ id: recordId});
-        SuccessResponce(res, updatedRecord, messageData.USER_UPDATE_SUCCESSFULL)
+
+        await AppDataSource
+            .createQueryBuilder()
+            .update(Model, updatedData)
+            .where("id = :id", { id: recordId })
+            .returning("*")
+            .updateEntity(true)
+            .execute()
+            .then((update: any) => {
+                if (update.raw.length != 0) {
+                    SuccessResponce(res, update.raw[0], messageData.USER_UPDATE_SUCCESSFULL)
+                } else {
+                    ErrorResponce(res, {}, messageData.WRONG_ID)
+                }
+            })
+            .catch((error: any) => {
+                ErrorResponce(res, error, messageData.UNKNOWN)
+            });
         return result;
-    } catch (error) { 
+    } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }
 }
+
+
+
 
 export async function DeleteRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
@@ -70,7 +144,7 @@ export async function DeleteRecord<T extends ObjectLiteral>(
         const result = await repository.delete(recordId);
         SuccessResponce(res, {}, messageData.USER_DELETE_SUCCESSFULL)
         return result;
-    } catch (error) { 
+    } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }

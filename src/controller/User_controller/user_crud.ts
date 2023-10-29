@@ -1,11 +1,37 @@
 import { Request, Response } from "express";
 import { User } from "../../model/user_model";
 import { AppDataSource } from "../../database/databaseConnection";
-import { AddRecord, DeleteRecord, ErrorResponce, ExtractKeys, ObjectWithRequireKeysValue, UpdateRecord } from "../Helper/helper_function";
+import { AddRecord, DeleteRecord, ErrorResponce, ExtractKeys, GetRecord, ObjectWithRequireKeysValue, UpdateRecord } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 const userRepo = AppDataSource.getRepository(User)
 
-export const Add_user = async (req: Request, res: Response) => { 
+
+
+export const Get_user = async (req: Request, res: Response) => { 
+
+  const keysArray = [
+    { limit: 5 },
+    { pageNo: 1 },
+    { orderBy: {} },
+    { search: '' },
+    { status: '' }, 
+  ];
+
+  const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
+  // const { limit, pageNo, orderBy, search } = req.body
+  // const { fieldName, order } = orderBy
+  // const params = { limit, pageNo, search, fieldName, order}
+
+  console.log("params", objectForAdd); 
+  try {
+    GetRecord(userRepo, res, User, objectForAdd) 
+  } catch (error) {
+    ErrorResponce(res, error, messageData.UNKNOWN)
+  }
+}
+
+
+export const Add_user = async (req: Request, res: Response) => {
   try {
 
     // value of keysArray is provides default to save record if absence of any value in body of require key 
@@ -16,24 +42,23 @@ export const Add_user = async (req: Request, res: Response) => {
       { roleId: '0' },
       { status: '0' },
       { remember_token: '' }
-    ]; 
+    ];
 
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
     let user: any = new User();
-    user = { ...user, ...objectForAdd}  
-    AddRecord(userRepo, user,res) 
+    user = { ...user, ...objectForAdd }
+    AddRecord(userRepo, user, res)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }
-
 
 export const Edit_user = async (req: Request, res: Response) => {
   try {
     const { id } = req.body
     const keysToExtract = ['user_name', 'email', 'password', 'roleId', 'status', 'remember_token'];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
-    UpdateRecord(userRepo, id, objectForUpadate, res)
+    UpdateRecord(userRepo, id, objectForUpadate, res,User)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
