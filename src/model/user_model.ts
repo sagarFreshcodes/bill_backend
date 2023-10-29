@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm"
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm"
 
 
 
@@ -8,18 +8,29 @@ export class User {
     id: number
 
     @Column()
-    name: string
+    user_name: string  
 
     @Column()
     email: string
 
     @Column()
     password: string
-    
+
     @Column()
-    role: string
+    roleId: string
+
+    @Column()
+    status: string
+
+    @Column()
+    remember_token: string
+
+    @CreateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })
+    "createdDate": Date;
+
+    @UpdateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })
+    "updatedDate": Date;
 
 }
 
 
- 

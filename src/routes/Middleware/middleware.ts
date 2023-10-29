@@ -1,5 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { messageData } from '../../Constant/message';
+import { ErrorResponce } from '../../controller/Helper/helper_function';
 const secretkey = "secretkey"
 const app = express();
 const port = 3000;
@@ -19,8 +21,8 @@ export function verifyToken(req:any , res:Response, next:NextFunction) {
     console.log(bearerToken);
     
     jwt.verify(bearerToken, secretkey, (err:any, authData:any) => {
-        if (err) {
-          res.send({ result: "no login===" });
+        if (err) { 
+          ErrorResponce(res, {}, messageData.UNAUTHORIZED_REQUEST) 
           console.log(err);
           
         } else {
@@ -33,7 +35,7 @@ export function verifyToken(req:any , res:Response, next:NextFunction) {
   
   } else {
     // Forbidden
-    res.send({ result: "no login" });
+    ErrorResponce(res, {}, messageData.UNAUTHORIZED_REQUEST) 
   }
 
 }
