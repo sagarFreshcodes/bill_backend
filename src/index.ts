@@ -1,8 +1,8 @@
-import express, { Express, Request, Response } from 'express';
+import express  from 'express';
 import "reflect-metadata"
 import { Category_routes } from './routes/General_routes/category_routes'; 
-import { ConnectDatabase } from "./database/databaseConnection"
-import { Photo, TestModel } from "./model/testModel"
+import { ConnectDatabase } from "./database/databaseConnection" 
+import bodyParser from "body-parser";
 import { Auth_routes } from './routes/Auth_routes/auth_routes';
 const app = express()
 const port = 5500
@@ -11,7 +11,20 @@ ConnectDatabase(url)
 
 
 app.use(Auth_routes, Category_routes) 
- 
+
+// Middlewares
+// /* To handle invalid JSON data request */
+// app.use(bodyParser.json({ limit: "50mb" }));
+
+// /* For parsing urlencoded data */
+// app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// parse application/json
+app.use(bodyParser.json())
+// parse requests of content-type - form-data/multipart
+app.use(express.json()); 
 // app.get("/",async(req:Request,res:Response)=>{
 //     const getRepo = AppDataSource.getRepository(Photo)
 //     const allData =  await getRepo.find()
