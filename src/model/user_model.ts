@@ -17,7 +17,7 @@ export class User {
     password: string
 
     @Column()
-    roleId: string
+    roleId: string    
 
     @Column()
     status: string

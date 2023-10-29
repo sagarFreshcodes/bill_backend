@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Authenticator } from "../../model/authenticator_model"; 
 import { AppDataSource } from "../../database/databaseConnection"; 
-import { ErrorResponce, SuccesResponce } from "../Helper/helper_function";
+import { ErrorResponce, SuccessResponce } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 
 export const Sign_up = async (req: Request, res: Response) => {
@@ -16,7 +16,7 @@ export const Sign_up = async (req: Request, res: Response) => {
       user.password = password,
       user.role = role
     const userInserted = await userRepo.save(user);
-    SuccesResponce(res, userInserted, messageData.REGISTARTION_SUCCESSFULL)
+    SuccessResponce(res, userInserted, messageData.REGISTARTION_SUCCESSFULL)
  
   } catch (error) {
     console.log(error);
