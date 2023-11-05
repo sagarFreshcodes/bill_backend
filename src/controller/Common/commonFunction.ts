@@ -5,7 +5,7 @@ import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, 
 const secretkey = "secretkey"
 import jwt from "jsonwebtoken"
 import { User } from "../../model/user_model";
-import { ErrorResponce, Offset, SuccessResponce, commaSeparatedStringToArray } from "../Helper/helper_function";
+import { ErrorResponce, Offset, SuccessResponce, commaSeparatedStringToArray, getOffset } from "../Helper/helper_function";
 
 
 
@@ -15,7 +15,9 @@ export async function GetRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     res: Response,
     Model: any,
-    objectForAdd: any
+    objectForAdd: any,
+    message:any,
+    other:object
 ): Promise<T | null> {
     try {
         // const record = await repository.find();
@@ -32,8 +34,10 @@ export async function GetRecord<T extends ObjectLiteral>(
                 return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal`
             })
             .join(' OR ');
+
+            
         const [list, count] = await repository
-            .createQueryBuilder("users")
+            .createQueryBuilder("records")
             // .leftJoinAndSelect('users.role', 'role')
             // .andWhere('users.id !=:id', { id: 1 })
             .andWhere(
@@ -41,14 +45,13 @@ export async function GetRecord<T extends ObjectLiteral>(
                     ? conditions
                     : '1=1',
                 { searchVal: `%${searchVal}%` }
-            )
-            .skip(Offset(limit, pageNo))
+                )
+            .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
-            .getManyAndCount();
+            .getManyAndCount(); 
 
-
-        SuccessResponce(res, { data: list, total_record: count }, messageData.USER_GET_SUCCESSFULL)
+        SuccessResponce(res, { data: list, total_record: count }, message)
         return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
@@ -58,43 +61,42 @@ export async function GetRecord<T extends ObjectLiteral>(
 export async function AddRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     tableObject: any,
-    res: Response
+    res: Response,
+    message:any,
+    other:object
 ): Promise<T | null> {
     try {
         const userInserted = await repository.save(tableObject);
-        SuccessResponce(res, userInserted, messageData.USER_ADD_SUCCESSFULL)
+        SuccessResponce(res, { data: { data: userInserted }}, message)
         return null; // Return the saved entity
     } catch (error) {
         // Handle the error here 
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }
-}
-
+} 
 export async function UpdateRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     recordId: any,
     updatedData: Partial<T>,
     res: Response,
-    Model: any
+    Model: any, 
+    message: any,
+    other: object
 ): Promise<UpdateResult | null> {
 
-    // console.log(Model, recordId);
-    // console.log(updatedData);
-    try {
-        // const result = await repository.update(recordId, updatedData);
-
-
+   
+    try { 
         await AppDataSource
             .createQueryBuilder()
-            .update(User, updatedData)
-            .where("id = :id", { id: 7 })
+            .update(Model, updatedData)
+            .where("id = :id", { id: recordId })
             .returning("*")
             .updateEntity(true)
             .execute()
             .then((update: any) => {
                 if (update.raw.length != 0) {
-                    SuccessResponce(res, update.raw[0], messageData.USER_UPDATE_SUCCESSFULL)
+                    SuccessResponce(res, {data:update.raw[0]},message)
                 } else {
                     ErrorResponce(res, {}, messageData.WRONG_ID)
                 }
@@ -107,10 +109,7 @@ export async function UpdateRecord<T extends ObjectLiteral>(
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }
-}
-
-
-
+} 
 
 export async function DeleteMultipalRecords(
     req: Request,

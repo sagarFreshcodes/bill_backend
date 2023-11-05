@@ -1,9 +1,9 @@
-import express from "express"
-import { verifyToken } from "../Middleware/middleware";
-import { Add_category, Delete_category, Edit_category, Get_category } from "../../controller/Category_controller/category_crud"; 
+import express from "express" 
+import { verifyToken } from "../Middleware/middleware"; 
+import { Add_user, Delete_user, Edit_user, Get_user } from "../../controller/User_controller/user_crud";
 export const User_routes = express.Router()
 
-User_routes.post("/get-all-users", verifyToken, Get_category);
-User_routes.post("/create-user", verifyToken, Add_category);
-User_routes.post("/update-user", verifyToken, Edit_category);
-User_routes.post("/delete-user", verifyToken, Delete_category);   
+User_routes.post("/get-all-users", verifyToken, Get_user);  
+User_routes.post("/create-user", verifyToken, Add_user);  
+User_routes.post("/update-user", verifyToken, Edit_user);  
+User_routes.post("/delete-user", verifyToken, Delete_user);   

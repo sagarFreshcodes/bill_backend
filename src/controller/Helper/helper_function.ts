@@ -4,12 +4,14 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
 const secretkey = "secretkey"
 import jwt from "jsonwebtoken"
-import { User } from "../../model/user_model";
+import { User } from "../../model/user_model";  
+import fs from "fs"
+import csv from "csv-parser"
 export const SuccessResponce = (res: Response, data: any, message: any) => {
     res.status(200).json({
         message: message,
         status: 1,
-        data: data
+        ...data
     })
 }
 
@@ -17,7 +19,7 @@ export const ErrorResponce = (res: Response, data: any, message: any) => {
     res.status(500).json({
         message: message,
         status: 0,
-        data: data
+       ...data
     })
 }
 
@@ -98,7 +100,7 @@ export async function GetUserRecord<T extends ObjectLiteral>(
             .getManyAndCount();
         const updateList = list.map((i) => { return { ...i, role: JSON.parse(i.role) || i.role } })
 
-        SuccessResponce(res, { data: updateList, total_record: count }, messageData.USER_GET_SUCCESSFULL)
+        SuccessResponce(res, { data: { data: updateList, total_record: count }  }, messageData.USER_GET_SUCCESSFULL)
         return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
@@ -175,11 +177,12 @@ export async function GetRecord<T extends ObjectLiteral>(
 export async function AddRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     tableObject: any,
-    res: Response
+    res: Response,
+    message:any
 ): Promise<T | null> {
     try {
         const userInserted = await repository.save(tableObject);
-        SuccessResponce(res, userInserted, messageData.USER_ADD_SUCCESSFULL)
+        SuccessResponce(res, { data: userInserted }, message)
         return null; // Return the saved entity
     } catch (error) {
         // Handle the error here 
@@ -205,7 +208,7 @@ export async function UpdateRecord<T extends ObjectLiteral>(
         await AppDataSource
             .createQueryBuilder()
             .update(User, updatedData)
-            .where("id = :id", { id: 7 })
+            .where("id = :id", { id: +recordId })
             .returning("*")
             .updateEntity(true)
             .execute() 
@@ -270,5 +273,51 @@ export function ExtractKeys(inputObject: any, keysToExtract: string[]): Record<s
     }
 
     return extractedObject;
+}
+
+export function parseCSVFile(csvFile:any) {
+    return new Promise((resolve, reject) => {
+        const csvData: any[]  = [];
+
+        // Use csv-parser to parse the CSV file
+        fs.createReadStream(csvFile.tempFilePath)
+            .pipe(csv())
+            .on('data', (row) => {
+                const cleanedRow: any = {};
+                for (const key in row) {
+                    if (Object.prototype.hasOwnProperty.call(row, key)) {
+                        cleanedRow[key.replace(/"/g, '')] = row[key];
+                    }
+                }
+                csvData.push(cleanedRow);
+            })
+            .on('end', () => {
+                resolve(csvData);
+            })
+            .on('error', (error) => {
+                reject(error);
+            });
+    });
+}
+
+export function removeQuotesFromKeys(data: any[]): any[] {
+    if (!Array.isArray(data)) {
+        return data; // Return data as is if it's not an array
+    }
+
+    return data.map((item) => {
+        if (typeof item === 'object' && item !== null) {
+            const newItem: { [key: string]: any } = {};
+            for (const key in item) {
+                if (Object.prototype.hasOwnProperty.call(item, key)) {
+                    const newKey = key.replace(/'/g, ''); // Remove single quotes
+                    newItem[newKey] = item[key];
+                }
+            }
+            return newItem;
+        } else {
+            return item;
+        }
+    });
 }
 
