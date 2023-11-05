@@ -53,6 +53,14 @@ export const getOffset = (pageNo: number, limit: number): any => {
     }
 
 }
+
+export function commaSeparatedStringToArray(inputString: string) {
+    if (typeof inputString !== 'string') {
+        return []; // Return an empty array for non-string input
+    }
+
+    return inputString.split(',');
+}
 export async function GetUserRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     res: Response,
@@ -164,7 +172,7 @@ export async function GetRecord<T extends ObjectLiteral>(
         return null;
     }
 }
-export async function AddRecord2<T extends ObjectLiteral>(
+export async function AddRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     tableObject: any,
     res: Response

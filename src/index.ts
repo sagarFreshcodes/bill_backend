@@ -5,6 +5,7 @@ import { ConnectDatabase } from "./database/databaseConnection"
 import bodyParser from "body-parser";
 import { Auth_routes } from './routes/Auth_routes/auth_routes';
 import { User_routes } from './routes/User_routes/user_routes';
+import { Common_routes } from './routes/General_routes/common_routes';
 const app = express()
 const port = 5500
 const url = `mongodb://localhost:27017/testModel`
@@ -41,7 +42,7 @@ app.use(express.json());
 // res.json(allData)
 // })
 
-app.use(Auth_routes, Category_routes, User_routes)
+app.use(Auth_routes, Common_routes, Category_routes, User_routes)
 app.listen(port, () => {
     console.log(`server running on http://localhost:${port}`);
 })
