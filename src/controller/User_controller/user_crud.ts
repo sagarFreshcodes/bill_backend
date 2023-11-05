@@ -49,18 +49,34 @@ export const Add_user = async (req: Request, res: Response) => {
       "permission": {},
     }
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray) 
-    const bcryptPwd = await bcrypt.hash(`${objectForAdd.password}`, 10); 
+    // const bcryptPwd = await bcrypt.hash(`${objectForAdd.password}`, 10); 
 
 
     let user: any = new User();
-    user = { ...user, ...objectForAdd, password: bcryptPwd, role: JSON.stringify(rollData) }
+    user = { ...user, ...objectForAdd, role: JSON.stringify(rollData) }
     Add_user_record(userRepo, user, res)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }
-
 export const Edit_user = async (req: Request, res: Response) => {
+  try {
+    const { id, roleId } = req.body 
+    const keysToExtract = ['user_name', 'email', 'password', 'role', 'status'];
+    const objectForUpadate = ExtractKeys(req.body, keysToExtract); 
+    const rollData = {
+      "id": +roleId || roleId,
+      "name": `${roleId}` == "3" ? "Technician" : `${roleId}` == "1" ? "Admin" : "User",
+      "permission": {},
+    }
+    const editUserData = { ...objectForUpadate, role: JSON.stringify(rollData) } 
+    
+    UpdateRecord(userRepo, id, editUserData, res, User)
+  } catch (error) {
+    ErrorResponce(res, error,` messageData.UNKNOWN`)
+  }
+}
+export const Edit_record = async (req: Request, res: Response) => {
   try {
     const { id } = req.body
     const keysToExtract = ['user_name', 'email', 'password', 'roleId', 'status'];

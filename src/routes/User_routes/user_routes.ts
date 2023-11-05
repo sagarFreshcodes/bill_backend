@@ -6,5 +6,4 @@ export const User_routes = express.Router()
 User_routes.post("/get-all-users", verifyToken, Get_user);  
 User_routes.post("/create-user", verifyToken, Add_user);  
 User_routes.post("/update-user", verifyToken, Edit_user);  
-User_routes.post("/delete-user", verifyToken, Delete_user);  
-// User_routes.post("/login", Log_in);  
+User_routes.post("/delete-user", verifyToken, Delete_user);   

@@ -4,6 +4,7 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
 const secretkey = "secretkey"
 import jwt from "jsonwebtoken"
+import { User } from "../../model/user_model";
 export const SuccessResponce = (res: Response, data: any, message: any) => {
     res.status(200).json({
         message: message,
@@ -50,7 +51,7 @@ export const getOffset = (pageNo: number, limit: number): any => {
     } catch (error) {
         return 0
     }
-  
+
 }
 export async function GetUserRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
@@ -69,8 +70,8 @@ export async function GetUserRecord<T extends ObjectLiteral>(
         const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
         const conditions = entityMetadata.columns
             .filter((column) => !excludedColumns.includes(column.propertyName))
-            .map((column) => { 
-                return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal` 
+            .map((column) => {
+                return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal`
             })
             .join(' OR ');
         const [list, count] = await repository
@@ -105,7 +106,7 @@ export async function Add_user_record<T extends ObjectLiteral>(
     try {
         const userInserted = await repository.save(tableObject);
         jwt.sign({ userInserted }, secretkey, { expiresIn: '2 days' }, (err: any, token: any) => {
-           
+
             const userWithToken = { ...userInserted, authToken: token }
             SuccessResponce(res, { data: userWithToken }, messageData.USER_ADD_SUCCESSFULL)
 
@@ -186,16 +187,20 @@ export async function UpdateRecord<T extends ObjectLiteral>(
     res: Response,
     Model: any
 ): Promise<UpdateResult | null> {
+
+    // console.log(Model, recordId);
+    // console.log(updatedData);
     try {
-        const result = await repository.update(recordId, updatedData);
+        // const result = await repository.update(recordId, updatedData);
+
 
         await AppDataSource
             .createQueryBuilder()
-            .update(Model, updatedData)
-            .where("id = :id", { id: recordId })
+            .update(User, updatedData)
+            .where("id = :id", { id: 7 })
             .returning("*")
             .updateEntity(true)
-            .execute()
+            .execute() 
             .then((update: any) => {
                 if (update.raw.length != 0) {
                     SuccessResponce(res, update.raw[0], messageData.USER_UPDATE_SUCCESSFULL)
@@ -203,10 +208,10 @@ export async function UpdateRecord<T extends ObjectLiteral>(
                     ErrorResponce(res, {}, messageData.WRONG_ID)
                 }
             })
-            .catch((error: any) => {
+            .catch((error: any) => { 
                 ErrorResponce(res, error, messageData.UNKNOWN)
             });
-        return result;
+        return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
