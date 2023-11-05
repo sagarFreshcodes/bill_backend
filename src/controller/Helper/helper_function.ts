@@ -15,7 +15,7 @@ export const SuccessResponce = (res: Response, data: any, message: any) => {
 export const ErrorResponce = (res: Response, data: any, message: any) => {
     res.status(500).json({
         message: message,
-        status:0,
+        status: 0,
         data: data
     })
 }
@@ -39,7 +39,20 @@ export function Offset(limit: any = 5, pageNo: any = 0): number {
 
     return offset;
 }
-export async function GetRecord<T extends ObjectLiteral>(
+
+export const getOffset = (pageNo: number, limit: number): any => {
+    try {
+        if (pageNo === 0) {
+            pageNo = 1
+        }
+        let offsetVal: number = (pageNo - 1) * limit;
+        return offsetVal;
+    } catch (error) {
+        return 0
+    }
+  
+}
+export async function GetUserRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     res: Response,
     Model: any,
@@ -48,6 +61,7 @@ export async function GetRecord<T extends ObjectLiteral>(
     try {
         // const record = await repository.find();
         const { limit, pageNo, orderBy, search } = objectForAdd
+        const searchVal = search
         const order = orderBy.order || "DESC"
         const fieldName = orderBy.fieldName || "id"
         const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
@@ -55,10 +69,8 @@ export async function GetRecord<T extends ObjectLiteral>(
         const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
         const conditions = entityMetadata.columns
             .filter((column) => !excludedColumns.includes(column.propertyName))
-            .map((column) => {
-
-                return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal`
-
+            .map((column) => { 
+                return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal` 
             })
             .join(' OR ');
         const [list, count] = await repository
@@ -66,18 +78,18 @@ export async function GetRecord<T extends ObjectLiteral>(
             // .leftJoinAndSelect('users.role', 'role')
             // .andWhere('users.id !=:id', { id: 1 })
             .andWhere(
-                search && search !== ''
+                searchVal && searchVal !== ''
                     ? conditions
                     : '1=1',
-                { search: `%${search}%` }
+                { searchVal: `%${searchVal}%` }
             )
-            .skip(Offset(limit, pageNo))
+            .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
             .getManyAndCount();
+        const updateList = list.map((i) => { return { ...i, role: JSON.parse(i.role) || i.role } })
 
-
-        SuccessResponce(res, { data: list, total_record: count }, messageData.USER_GET_SUCCESSFULL)
+        SuccessResponce(res, { data: updateList, total_record: count }, messageData.USER_GET_SUCCESSFULL)
         return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
@@ -93,6 +105,7 @@ export async function Add_user_record<T extends ObjectLiteral>(
     try {
         const userInserted = await repository.save(tableObject);
         jwt.sign({ userInserted }, secretkey, { expiresIn: '2 days' }, (err: any, token: any) => {
+           
             const userWithToken = { ...userInserted, authToken: token }
             SuccessResponce(res, { data: userWithToken }, messageData.USER_ADD_SUCCESSFULL)
 
@@ -100,6 +113,52 @@ export async function Add_user_record<T extends ObjectLiteral>(
         return null; // Return the saved entity 
     } catch (error) {
         // Handle the error here 
+        ErrorResponce(res, error, messageData.UNKNOWN)
+        return null;
+    }
+}
+
+
+export async function GetRecord<T extends ObjectLiteral>(
+    repository: Repository<T>,
+    res: Response,
+    Model: any,
+    objectForAdd: any
+): Promise<T | null> {
+    try {
+        // const record = await repository.find();
+        const { limit, pageNo, orderBy, search } = objectForAdd
+        const searchVal = search
+        const order = orderBy.order || "DESC"
+        const fieldName = orderBy.fieldName || "id"
+        const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
+
+        const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
+        const conditions = entityMetadata.columns
+            .filter((column) => !excludedColumns.includes(column.propertyName))
+            .map((column) => {
+                return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal`
+            })
+            .join(' OR ');
+        const [list, count] = await repository
+            .createQueryBuilder("users")
+            // .leftJoinAndSelect('users.role', 'role')
+            // .andWhere('users.id !=:id', { id: 1 })
+            .andWhere(
+                searchVal && searchVal !== ''
+                    ? conditions
+                    : '1=1',
+                { searchVal: `%${searchVal}%` }
+            )
+            .skip(Offset(limit, pageNo))
+            .take(limit)
+            .orderBy(fieldName, order, "NULLS LAST")
+            .getManyAndCount();
+
+
+        SuccessResponce(res, { data: list, total_record: count }, messageData.USER_GET_SUCCESSFULL)
+        return null;
+    } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }

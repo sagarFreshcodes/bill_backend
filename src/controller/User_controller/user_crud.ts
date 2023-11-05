@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../../model/user_model";
 import { AppDataSource } from "../../database/databaseConnection";
-import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetRecord, ObjectWithRequireKeysValue, UpdateRecord } from "../Helper/helper_function";
+import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetRecord, GetUserRecord, ObjectWithRequireKeysValue, UpdateRecord } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import bcrypt from "bcrypt"
 const userRepo = AppDataSource.getRepository(User)
@@ -22,10 +22,9 @@ export const Get_user = async (req: Request, res: Response) => {
   // const { limit, pageNo, orderBy, search } = req.body
   // const { fieldName, order } = orderBy
   // const params = { limit, pageNo, search, fieldName, order}
-
-  console.log("params", objectForAdd);
+ 
   try {
-    GetRecord(userRepo, res, User, objectForAdd)
+    GetUserRecord(userRepo, res, User, objectForAdd)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
@@ -34,7 +33,7 @@ export const Get_user = async (req: Request, res: Response) => {
 
 export const Add_user = async (req: Request, res: Response) => {
   try {
-
+    const {roleId} = req.body
     // value of keysArray is provides default to save record if absence of any value in body of require key 
     const keysArray = [
       { user_name: '' },
@@ -44,11 +43,17 @@ export const Add_user = async (req: Request, res: Response) => {
       { status: '1' },
       { remember_token: '' }
     ];
-
+    const rollData = {
+      "id": +roleId || roleId,
+      "name": `${roleId}` == "3" ? "Technician" : `${roleId}` == "1" ? "Admin" : "User",
+      "permission": {},
+    }
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray) 
     const bcryptPwd = await bcrypt.hash(`${objectForAdd.password}`, 10); 
+
+
     let user: any = new User();
-    user = { ...user, ...objectForAdd, password: bcryptPwd }
+    user = { ...user, ...objectForAdd, password: bcryptPwd, role: JSON.stringify(rollData) }
     Add_user_record(userRepo, user, res)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
