@@ -2,9 +2,12 @@ import { Response } from "express";
 import { messageData } from "../../Constant/message";
 import { AppDataSource } from "../../database/databaseConnection";
 import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
+const secretkey = "secretkey"
+import jwt from "jsonwebtoken"
 export const SuccessResponce = (res: Response, data: any, message: any) => {
     res.status(200).json({
         message: message,
+        status: 1,
         data: data
     })
 }
@@ -12,6 +15,7 @@ export const SuccessResponce = (res: Response, data: any, message: any) => {
 export const ErrorResponce = (res: Response, data: any, message: any) => {
     res.status(500).json({
         message: message,
+        status:0,
         data: data
     })
 }
@@ -56,7 +60,7 @@ export async function GetRecord<T extends ObjectLiteral>(
                 return `cast(users.${column.propertyName} as varchar) ILIKE :searchVal`
 
             })
-            .join(' OR '); 
+            .join(' OR ');
         const [list, count] = await repository
             .createQueryBuilder("users")
             // .leftJoinAndSelect('users.role', 'role')
@@ -73,7 +77,7 @@ export async function GetRecord<T extends ObjectLiteral>(
             .getManyAndCount();
 
 
-        SuccessResponce(res, { data:list, total_record:count }, messageData.USER_GET_SUCCESSFULL)
+        SuccessResponce(res, { data: list, total_record: count }, messageData.USER_GET_SUCCESSFULL)
         return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
@@ -81,8 +85,26 @@ export async function GetRecord<T extends ObjectLiteral>(
     }
 }
 
+export async function Add_user_record<T extends ObjectLiteral>(
+    repository: Repository<T>,
+    tableObject: any,
+    res: Response
+): Promise<T | null> {
+    try {
+        const userInserted = await repository.save(tableObject);
+        jwt.sign({ userInserted }, secretkey, { expiresIn: '2 days' }, (err: any, token: any) => {
+            const userWithToken = { ...userInserted, authToken: token }
+            SuccessResponce(res, { data: userWithToken }, messageData.USER_ADD_SUCCESSFULL)
 
-export async function AddRecord<T extends ObjectLiteral>(
+        });
+        return null; // Return the saved entity 
+    } catch (error) {
+        // Handle the error here 
+        ErrorResponce(res, error, messageData.UNKNOWN)
+        return null;
+    }
+}
+export async function AddRecord2<T extends ObjectLiteral>(
     repository: Repository<T>,
     tableObject: any,
     res: Response

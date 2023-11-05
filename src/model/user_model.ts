@@ -1,14 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm"
-
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, EventSubscriber } from "typeorm"
+const bcrypt = require("bcryptjs");
 
 
 @Entity()
+@EventSubscriber()
 export class User {
     @PrimaryGeneratedColumn()
     id: number
 
     @Column()
-    user_name: string  
+    user_name: string
 
     @Column()
     email: string
@@ -16,14 +17,18 @@ export class User {
     @Column()
     password: string
 
+    // @BeforeInsert()
+    // async hashPassword() {
+    //     console.log('test===================lll>', this.password);
+    //     if (this.password) this.password = await bcrypt.hash(this.password, 10);
+    // }
+
     @Column()
-    roleId: string    
+    role: string
 
     @Column()
     status: string
 
-    @Column()
-    remember_token: string
 
     @CreateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })
     "createdDate": Date;
