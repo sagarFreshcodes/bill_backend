@@ -59,13 +59,20 @@ export const Import_category = async (req: any, res: Response) => {
       console.log("csvData", typeof req.files);
       return res.status(400).send('No file uploaded.');
     } else {
-      const csvData: any = await parseCSVFile(req.files.csv);
-      const csvObject = removeQuotesFromKeys(csvData)
-      console.log("csvData", csvObject);
+      const options: any = {
+          keysToKeep: ['category_name', 'status'],
+          validKeys: ['category_name', 'status',],
+      };
+
+      const csvData: any = await parseCSVFile(req.files, options);
+      // const csvObject = removeQuotesFromKeys(csvData)
+      // console.log("csvData", csvObject);
       console.log("csvData", csvData);
       // console.log("csvData", csvObject[1]["'category_name'"] ); 
     }
   } catch (error) {
+    console.log(error);
+    
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }

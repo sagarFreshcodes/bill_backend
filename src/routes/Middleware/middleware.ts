@@ -17,13 +17,12 @@ export function verifyToken(req:any , res:Response, next:NextFunction) {
     // Get token from array
     const bearerToken = bearer[1];
     // Set the token 
-    // Next middleware
-    console.log(bearerToken);
+    // Next middleware 
     
     jwt.verify(bearerToken, secretkey, (err:any, authData:any) => {
         if (err) { 
           ErrorResponce(res, {}, messageData.UNAUTHORIZED_REQUEST) 
-          console.log(err);
+     
           
         } else {
             console.log(authData);

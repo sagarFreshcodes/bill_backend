@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken"
 import { User } from "../../model/user_model";  
 import fs from "fs"
 import csv from "csv-parser"
+import parse from "papaparse"
 export const SuccessResponce = (res: Response, data: any, message: any) => {
     res.status(200).json({
         message: message,
@@ -275,28 +276,83 @@ export function ExtractKeys(inputObject: any, keysToExtract: string[]): Record<s
     return extractedObject;
 }
 
-export function parseCSVFile(csvFile:any) {
-    return new Promise((resolve, reject) => {
-        const csvData: any[]  = [];
+// export function parseCSVFile(csvFile:any) {
+//     return new Promise((resolve, reject) => {
+//         const csvData: any[]  = [];
 
-        // Use csv-parser to parse the CSV file
-        fs.createReadStream(csvFile.tempFilePath)
-            .pipe(csv())
-            .on('data', (row) => {
-                const cleanedRow: any = {};
-                for (const key in row) {
-                    if (Object.prototype.hasOwnProperty.call(row, key)) {
-                        cleanedRow[key.replace(/"/g, '')] = row[key];
-                    }
-                }
-                csvData.push(cleanedRow);
-            })
-            .on('end', () => {
-                resolve(csvData);
-            })
-            .on('error', (error) => {
-                reject(error);
+//         // Use csv-parser to parse the CSV file
+//         fs.createReadStream(csvFile.tempFilePath)
+//             .pipe(csv())
+//             .on('data', (data) => csvData.push(data))
+//             .on('end', () => {
+//                 // At this point, 'results' will contain an array of objects, with each object representing a row in the CSV file.
+//                 console.log(`csvData=>`, csvData);
+//             })
+//             .on('error', (error) => {
+//                 reject(error);
+//             });
+//     });
+// }
+interface FilterOptions {
+    keysToKeep: string[]; // Keys to keep in each object
+    validKeys: string[]; // Array of valid keys that must match
+}
+
+export function FilterObjectsForValidDatabaseField(inputArray: any[], options: FilterOptions): any[] {
+    const { keysToKeep, validKeys } = options;
+
+    return inputArray
+        .filter((obj) => {
+            // Filter out objects with all values being undefined, null, or empty string
+            return !Object.values(obj).every((value: any) => [undefined, null, ''].includes(value));
+        })
+        .map((obj) => {
+            // Keep only the specified keys and their values
+            const filteredObj: { [key: string]: any } = {};
+            keysToKeep.forEach((key) => {
+                filteredObj[key] = obj[key] || ''; // Set empty string if the key doesn't exist in the object
             });
+            return filteredObj;
+        })
+        .filter((obj) => {
+            // Filter out objects with keys that do not match the validKeys array
+            return validKeys.every((key) => Object.keys(obj).includes(key));
+        });
+}
+
+// Example usage:
+// const inputArray = [
+//     { category_name: 'Printer', status: 'active', price: 100, jjj: 'jj' },
+//     { category_name: 'Desktop', status: 'active', price: null },
+//     { category_name: 'Computer', status: 'active', price: undefined },
+//     { category_name: 'Electronics', status: 'active', price: '' },
+//     { category_name: 'jjj' },
+// ];
+
+
+export function parseCSVFile(csvFile: any,options:any) {
+    return new Promise((resolve, reject) => {
+        console.log("csvFile.tempFilePath",  );
+        
+        fs.readFile(csvFile.csv.tempFilePath, 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            // Parse the CSV data
+            parse.parse(data, {
+                header: true, // Treat the first row as the header row
+                dynamicTyping: true, // Automatically convert values to appropriate data types
+                complete: function (results) {
+                    // At this point, 'results.data' will contain an array of objects, with each object representing a row in the CSV file.
+                    // console.log(results.data);
+                  const data =  FilterObjectsForValidDatabaseField(results.data, options)
+                  console.log("data--------",data);
+                  
+                },
+            });
+        });
     });
 }
 
@@ -321,3 +377,20 @@ export function removeQuotesFromKeys(data: any[]): any[] {
     });
 }
 
+
+
+// // Example usage:
+// const inputArray = [
+//     { category_name: 'Printer', status: 'active', price: 100, jjj: 'jj' },
+//     { category_name: 'Desktop', status: 'active', price: null },
+//     { category_name: 'Computer', status: 'active', price: undefined },
+//     { category_name: 'Electronics', status: 'active', price: '' },
+//     { category_name: 'jjj' },
+// ];
+
+// const options: FilterOptions = {
+//     keysToKeep: ['category_name', 'status'],
+//     validKeys: ['category_name', 'status',],
+// };
+
+// const filteredArray = filterObjects(inputArray, options);
