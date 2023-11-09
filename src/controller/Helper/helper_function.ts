@@ -4,7 +4,7 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
 const secretkey = "secretkey"
 import jwt from "jsonwebtoken"
-import { User } from "../../model/user_model";  
+import { User } from "../../model/user_model";
 import fs from "fs"
 import csv from "csv-parser"
 import parse from "papaparse"
@@ -20,7 +20,7 @@ export const ErrorResponce = (res: Response, data: any, message: any) => {
     res.status(500).json({
         message: message,
         status: 0,
-       ...data
+        ...data
     })
 }
 
@@ -101,7 +101,7 @@ export async function GetUserRecord<T extends ObjectLiteral>(
             .getManyAndCount();
         const updateList = list.map((i) => { return { ...i, role: JSON.parse(i.role) || i.role } })
 
-        SuccessResponce(res, { data: { data: updateList, total_record: count }  }, messageData.USER_GET_SUCCESSFULL)
+        SuccessResponce(res, { data: { data: updateList, total_record: count } }, messageData.USER_GET_SUCCESSFULL)
         return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
@@ -179,7 +179,7 @@ export async function AddRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     tableObject: any,
     res: Response,
-    message:any
+    message: any
 ): Promise<T | null> {
     try {
         const userInserted = await repository.save(tableObject);
@@ -212,7 +212,7 @@ export async function UpdateRecord<T extends ObjectLiteral>(
             .where("id = :id", { id: +recordId })
             .returning("*")
             .updateEntity(true)
-            .execute() 
+            .execute()
             .then((update: any) => {
                 if (update.raw.length != 0) {
                     SuccessResponce(res, update.raw[0], messageData.USER_UPDATE_SUCCESSFULL)
@@ -220,7 +220,7 @@ export async function UpdateRecord<T extends ObjectLiteral>(
                     ErrorResponce(res, {}, messageData.WRONG_ID)
                 }
             })
-            .catch((error: any) => { 
+            .catch((error: any) => {
                 ErrorResponce(res, error, messageData.UNKNOWN)
             });
         return null;
@@ -295,28 +295,32 @@ export function ExtractKeys(inputObject: any, keysToExtract: string[]): Record<s
 // }
 interface FilterOptions {
     keysToKeep: string[]; // Keys to keep in each object
-    validKeys: string[]; // Array of valid keys that must match
+    idKey: string; // Array of valid keys that must match
 }
 
 export function FilterObjectsForValidDatabaseField(inputArray: any[], options: FilterOptions): any[] {
-    const { keysToKeep, validKeys } = options;
+    const { keysToKeep, idKey } = options;
 
     return inputArray
         .filter((obj) => {
-            // Filter out objects with all values being undefined, null, or empty string
-            return !Object.values(obj).every((value: any) => [undefined, null, ''].includes(value));
+            // Set default value for idKey if it doesn't exist in the object
+            obj[idKey] = obj[idKey] || '';
+
+            // Set default value for keysToKeep if they don't exist or have null/undefined/blank values
+            keysToKeep.forEach((key) => {
+                obj[key] = obj[key] || '';
+            });
+
+            // Filter out objects with idKey value being null, undefined, or empty string
+            return obj[idKey] !== null && obj[idKey] !== undefined && obj[idKey] !== '';
         })
         .map((obj) => {
             // Keep only the specified keys and their values
             const filteredObj: { [key: string]: any } = {};
             keysToKeep.forEach((key) => {
-                filteredObj[key] = obj[key] || ''; // Set empty string if the key doesn't exist in the object
+                filteredObj[key] = obj[key];
             });
             return filteredObj;
-        })
-        .filter((obj) => {
-            // Filter out objects with keys that do not match the validKeys array
-            return validKeys.every((key) => Object.keys(obj).includes(key));
         });
 }
 
@@ -330,29 +334,34 @@ export function FilterObjectsForValidDatabaseField(inputArray: any[], options: F
 // ];
 
 
-export function parseCSVFile(csvFile: any,options:any) {
+export function parseCSVFile(csvFile: any, options: any) {
     return new Promise((resolve, reject) => {
-        console.log("csvFile.tempFilePath",  );
-        
-        fs.readFile(csvFile.csv.tempFilePath, 'utf8', (err, data) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
+        console.log("csvFile.tempFilePath",);
+        try {
+            fs.readFile(csvFile.csv.tempFilePath, 'utf8', (err, data) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
 
-            // Parse the CSV data
-            parse.parse(data, {
-                header: true, // Treat the first row as the header row
-                dynamicTyping: true, // Automatically convert values to appropriate data types
-                complete: function (results) {
-                    // At this point, 'results.data' will contain an array of objects, with each object representing a row in the CSV file.
-                    // console.log(results.data);
-                  const data =  FilterObjectsForValidDatabaseField(results.data, options)
-                  console.log("data--------",data);
-                  
-                },
+                // Parse the CSV data
+                parse.parse(data, {
+                    header: true, // Treat the first row as the header row
+                    dynamicTyping: true, // Automatically convert values to appropriate data types
+                    complete: function (results) {
+                        // At this point, 'results.data' will contain an array of objects, with each object representing a row in the CSV file.
+                        // console.log(results.data);
+                        const data = FilterObjectsForValidDatabaseField(results.data, options)
+                        resolve(data)
+
+
+                    },
+                });
             });
-        });
+        } catch (error) {
+            reject([])
+        }
+
     });
 }
 

@@ -75,6 +75,43 @@ export async function AddRecord<T extends ObjectLiteral>(
         return null;
     }
 } 
+
+
+export async function AddMultipalRecord<T extends ObjectLiteral>(
+    repository: Repository<T>,
+    tableObject: any,
+    res: Response,
+    message: any,
+    recordArray:any,
+    entity:any,
+    other: object
+): Promise<T | null> {
+    try {
+        const tempData = [
+            { category_name: 'Printer', status: 'active' },
+            { category_name: 'Desktop', status: 'active' }, 
+            { category_name: 'Electronics', status: 'active' },
+            { category_name: 'Laptop', status: 'active' }
+        ]
+        // const userInserted = await repository.save(tableObject);
+        for (const record of tempData) { 
+            
+            await AppDataSource.createQueryBuilder()
+                .insert()
+                .into(entity)
+                .values(record)
+                .execute(); 
+        }
+
+        SuccessResponce(res, { data: { data: {} } }, message)
+        return null; // Return the saved entity
+    } catch (error) {
+        // Handle the error here 
+        ErrorResponce(res, error, messageData.UNKNOWN)
+        return null;
+    }
+}
+
 export async function UpdateRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     recordId: any,

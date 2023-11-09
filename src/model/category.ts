@@ -4,11 +4,12 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 
 @Entity()
 @EventSubscriber()
+
 export class Category {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column()
+    @Column( )
     category_name: string 
 
     @Column()

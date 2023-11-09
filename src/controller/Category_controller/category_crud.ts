@@ -3,7 +3,7 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import { Category } from "../../model/category";
-import { AddRecord, GetRecord, UpdateRecord } from "../Common/commonFunction";
+import { AddMultipalRecord, AddRecord, GetRecord, UpdateRecord } from "../Common/commonFunction";
 const categoryRepo = AppDataSource.getRepository(Category)
 
 export const Get_category = async (req: Request, res: Response) => {
@@ -35,6 +35,8 @@ export const Add_category = async (req: Request, res: Response) => {
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
     let user: any = new Category();
     user = { ...user, ...objectForAdd }
+    console.log( user);
+    
     AddRecord(categoryRepo, user, res, messageData.USER_ADD_SUCCESSFULL, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
@@ -54,25 +56,33 @@ export const Edit_category = async (req: Request, res: Response) => {
 
 
 export const Import_category = async (req: any, res: Response) => {
+
+
   try {
     if (!req.files) {
       console.log("csvData", typeof req.files);
       return res.status(400).send('No file uploaded.');
     } else {
-      const options: any = {
-          keysToKeep: ['category_name', 'status'],
-          validKeys: ['category_name', 'status',],
+      interface FilterOptions {
+        keysToKeep: string[]; // Keys to keep in each object
+        idKey: string; // Array of valid keys that must match
+      }
+
+      const options: FilterOptions = {
+        keysToKeep: ['category_name', 'status'],
+        idKey: 'id',
       };
 
       const csvData: any = await parseCSVFile(req.files, options);
-      // const csvObject = removeQuotesFromKeys(csvData)
-      // console.log("csvData", csvObject);
-      console.log("csvData", csvData);
-      // console.log("csvData", csvObject[1]["'category_name'"] ); 
+      let categoryTebale: any = new Category();
+      // console.log(csvData);
+
+      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category ,{})
+      // console.log("csvData", csvData); 
     }
   } catch (error) {
     console.log(error);
-    
+
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }
