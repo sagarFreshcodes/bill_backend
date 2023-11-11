@@ -3,13 +3,13 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import { Category } from "../../model/category";
-import { AddMultipalRecord, AddRecord, GetRecord, UpdateRecord } from "../Common/commonFunction";
+import { AddMultipalRecord, AddRecord, ExportRecord, GetRecord, UpdateRecord } from "../Common/commonFunction";
 const categoryRepo = AppDataSource.getRepository(Category)
 
 export const Get_category = async (req: Request, res: Response) => {
 
   const keysArray = [
-    { limit: 5 },
+    { limit: 10 },
     { pageNo: 1 },
     { orderBy: {} },
     { search: '' },
@@ -30,13 +30,13 @@ export const Add_category = async (req: Request, res: Response) => {
   try {
     const keysArray = [
       { category_name: '' },
-      { status: '1' },
+      { status: 1 },
     ];
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
     let user: any = new Category();
     user = { ...user, ...objectForAdd }
-    console.log( user);
-    
+    console.log(user);
+
     AddRecord(categoryRepo, user, res, messageData.USER_ADD_SUCCESSFULL, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
@@ -75,14 +75,34 @@ export const Import_category = async (req: any, res: Response) => {
 
       const csvData: any = await parseCSVFile(req.files, options);
       let categoryTebale: any = new Category();
-      // console.log(csvData);
+      console.log(`csvData--------`, csvData);
 
       AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category ,{})
-      // console.log("csvData", csvData); 
+  
     }
   } catch (error) {
     console.log(error);
 
+    ErrorResponce(res, error, messageData.UNKNOWN)
+  }
+}
+
+
+export const Export_category = async (req: Request, res: Response) => {
+
+  const keysArray = [
+    { limit: 10 },
+    { pageNo: 1 },
+    { orderBy: {} },
+    { search: '' },
+    { status: '' },
+  ];
+
+  const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
+  const keysToKeep = ['status', 'category_name'];
+  try {
+    ExportRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, keysToKeep, {})
+  } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }

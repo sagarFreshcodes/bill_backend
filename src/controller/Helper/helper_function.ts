@@ -4,7 +4,7 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult } from 'typeorm';
 const secretkey = "secretkey"
 import jwt from "jsonwebtoken"
-import { User } from "../../model/user_model";
+import { Users } from "../../model/user_model";
 import fs from "fs"
 import csv from "csv-parser"
 import parse from "papaparse"
@@ -97,11 +97,11 @@ export async function GetUserRecord<T extends ObjectLiteral>(
             )
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
-            .orderBy(fieldName, order, "NULLS LAST")
+            .orderBy(`${fieldName}`.includes(`role`) ? "role" : fieldName, order, "NULLS LAST")
             .getManyAndCount();
         const updateList = list.map((i) => { return { ...i, role: JSON.parse(i.role) || i.role } })
 
-        SuccessResponce(res, { data: { data: updateList, total_record: count } }, messageData.USER_GET_SUCCESSFULL)
+        SuccessResponce(res,  { data: updateList, totalRecords: count   }, messageData.USER_GET_SUCCESSFULL)
         return null;
     } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
@@ -208,7 +208,7 @@ export async function UpdateRecord<T extends ObjectLiteral>(
 
         await AppDataSource
             .createQueryBuilder()
-            .update(User, updatedData)
+            .update(Users, updatedData)
             .where("id = :id", { id: +recordId })
             .returning("*")
             .updateEntity(true)
@@ -335,10 +335,9 @@ export function FilterObjectsForValidDatabaseField(inputArray: any[], options: F
 
 
 export function parseCSVFile(csvFile: any, options: any) {
-    return new Promise((resolve, reject) => {
-        console.log("csvFile.tempFilePath",);
+    return new Promise((resolve, reject) => { 
         try {
-            fs.readFile(csvFile.csv.tempFilePath, 'utf8', (err, data) => {
+            fs.readFile(csvFile.file.tempFilePath, 'utf8', (err, data) => {
                 if (err) {
                     console.error(err);
                     return;
@@ -350,7 +349,7 @@ export function parseCSVFile(csvFile: any, options: any) {
                     dynamicTyping: true, // Automatically convert values to appropriate data types
                     complete: function (results) {
                         // At this point, 'results.data' will contain an array of objects, with each object representing a row in the CSV file.
-                        // console.log(results.data);
+                     
                         const data = FilterObjectsForValidDatabaseField(results.data, options)
                         resolve(data)
 
@@ -388,6 +387,9 @@ export function removeQuotesFromKeys(data: any[]): any[] {
 
 
 
+ 
+
+
 // // Example usage:
 // const inputArray = [
 //     { category_name: 'Printer', status: 'active', price: 100, jjj: 'jj' },
@@ -403,3 +405,38 @@ export function removeQuotesFromKeys(data: any[]): any[] {
 // };
 
 // const filteredArray = filterObjects(inputArray, options);
+
+export function TransformObjectsWithSelectedKey(inputArray: any, keysToKeep: any) {
+    return inputArray.map((obj: { [x: string]: any; }) => {
+        const newObj: any = {};
+        keysToKeep.forEach((key: string | number) => {
+            if (obj[key] !== undefined) {
+                if (key == "status") {
+                    newObj[key] = +`${obj[key]}` || 0;
+                }else{
+                    newObj[key] = obj[key];
+                }
+               
+            }
+        });
+        return newObj;
+    });
+}
+
+
+export function ChangeObjectByStatus(inputArray: any, keysToKeep: any) {
+    return inputArray.map((obj: { [x: string]: any; }) => {
+        const newObj: any = {};
+        keysToKeep.forEach((key: string | number) => {
+            if (obj[key] !== undefined) {
+                if (key == "status") {
+                    newObj[key] = ["active","Active"].includes(`${obj[key]}`)?1:0 ;
+                } else {
+                    newObj[key] = obj[key];
+                }
+
+            }
+        });
+        return newObj;
+    });
+}

@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 
 @Entity()
 @EventSubscriber()
-export class User {
+export class Users {
     @PrimaryGeneratedColumn()
     id: number
 

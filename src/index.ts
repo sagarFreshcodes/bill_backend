@@ -7,7 +7,9 @@ import { Auth_routes } from './routes/Auth_routes/auth_routes';
 import { User_routes } from './routes/User_routes/user_routes';
 import { Common_routes } from './routes/General_routes/common_routes';
 import fileupload from "express-fileupload";
+import cors from "cors";
 const app = express()
+app.use(cors());
 const port = 5500
 const url = `mongodb://localhost:27017/testModel`
 ConnectDatabase(url)

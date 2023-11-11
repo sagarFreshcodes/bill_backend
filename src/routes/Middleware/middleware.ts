@@ -24,8 +24,7 @@ export function verifyToken(req:any , res:Response, next:NextFunction) {
           ErrorResponce(res, {}, messageData.UNAUTHORIZED_REQUEST) 
      
           
-        } else {
-            console.log(authData);
+        } else { 
             req.authData = authData
             next();
          

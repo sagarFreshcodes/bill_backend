@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { User } from "../../model/user_model";
+import { Users } from "../../model/user_model";
 import { AppDataSource } from "../../database/databaseConnection";
 import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetRecord, GetUserRecord, ObjectWithRequireKeysValue, UpdateRecord } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import bcrypt from "bcrypt"
-const userRepo = AppDataSource.getRepository(User)
+const userRepo = AppDataSource.getRepository(Users)
 
 
 
@@ -24,7 +24,7 @@ export const Get_user = async (req: Request, res: Response) => {
   // const params = { limit, pageNo, search, fieldName, order}
  
   try {
-    GetUserRecord(userRepo, res, User, objectForAdd)
+    GetUserRecord(userRepo, res, Users, objectForAdd)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
@@ -52,7 +52,7 @@ export const Add_user = async (req: Request, res: Response) => {
     // const bcryptPwd = await bcrypt.hash(`${objectForAdd.password}`, 10); 
 
 
-    let user: any = new User();
+    let user: any = new Users();
     user = { ...user, ...objectForAdd, role: JSON.stringify(rollData) }
     Add_user_record(userRepo, user, res)
   } catch (error) {
@@ -71,7 +71,7 @@ export const Edit_user = async (req: Request, res: Response) => {
     }
     const editUserData = { ...objectForUpadate, role: JSON.stringify(rollData) } 
     
-    UpdateRecord(userRepo, id, editUserData, res, User)
+    UpdateRecord(userRepo, id, editUserData, res, Users)
   } catch (error) {
     ErrorResponce(res, error,` messageData.UNKNOWN`)
   }
@@ -81,7 +81,7 @@ export const Edit_record = async (req: Request, res: Response) => {
     const { id } = req.body
     const keysToExtract = ['user_name', 'email', 'password', 'roleId', 'status'];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
-    UpdateRecord(userRepo, id, objectForUpadate, res, User)
+    UpdateRecord(userRepo, id, objectForUpadate, res, Users)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }

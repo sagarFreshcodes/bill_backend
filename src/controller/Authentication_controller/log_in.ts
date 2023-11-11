@@ -3,12 +3,12 @@ import { getRepository } from "typeorm";
 // Import your User entity
 const secretkey = "secretkey"
 import jwt from "jsonwebtoken"
-import { User } from "../../model/user_model";
+import { Users } from "../../model/user_model";
 import { AppDataSource } from "../../database/databaseConnection";
 import { messageData } from "../../Constant/message";
 import { ErrorResponce, SuccessResponce } from "../Helper/helper_function";
 export const Log_in = async (req: Request, res: Response) => {
-  const userRepository = AppDataSource.getRepository(User);
+  const userRepository = AppDataSource.getRepository(Users);
   const { email, password } = req.body
   let user = await userRepository
     .createQueryBuilder('user')

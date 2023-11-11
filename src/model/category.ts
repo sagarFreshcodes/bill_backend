@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, EventSubscriber } from "typeorm"
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, EventSubscriber, Int32, IntegerType } from "typeorm"
  
 
 
@@ -13,7 +13,7 @@ export class Category {
     category_name: string 
 
     @Column()
-    status: string
+    status: number
 
 
     @CreateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })
