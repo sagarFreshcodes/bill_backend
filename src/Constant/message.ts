@@ -8,6 +8,14 @@ export const messageData = {
     WRONG_ID: "Passed id is wrong",
     RECORDS_DELETE_SUCCESSFULL: "Records Delete successfully",
     INVALID_ID: "Invalid Id!",
+
+    //category
+    TEST_GET_SUCCESSFULL: "Get all record successfully",
+    TEST_ADD_SUCCESSFULL: "Test Added Successfully",
+    TEST_UPDATE_SUCCESSFULL: "Test Update successfully",
+    TEST_DELETE_SUCCESSFULL: "Test Delete successfully",
+
+
 // user
     USER_GET_SUCCESSFULL: "Get all record successfully",
     USER_ADD_SUCCESSFULL: "User Added Successfully",

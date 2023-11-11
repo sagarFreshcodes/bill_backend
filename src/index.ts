@@ -8,6 +8,7 @@ import { User_routes } from './routes/User_routes/user_routes';
 import { Common_routes } from './routes/General_routes/common_routes';
 import fileupload from "express-fileupload";
 import cors from "cors";
+import { Test_routes } from './routes/General_routes/test_routes';
 const app = express()
 app.use(cors());
 const port = 5500
@@ -52,7 +53,7 @@ app.use(
 // res.json(allData)
 // })
 
-app.use(Auth_routes, Common_routes, Category_routes, User_routes)
+app.use(Test_routes,Auth_routes, Common_routes, Category_routes, User_routes)
 app.listen(port, () => {
     console.log(`server running on http://localhost:${port}`);
 })
