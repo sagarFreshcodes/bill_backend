@@ -16,71 +16,6 @@ export async function GetTestData<T extends ObjectLiteral>(
     Model: any,
     objectForAdd: any,
     message: any,
-    other: any
-): Promise<T | null> {
-    try {
-        // const record = await repository.find();
-        const { limit, pageNo, orderBy, search } = objectForAdd
-        const { isFilter, filterValue, filterData } = other
-        const searchVal = search
-        const order = orderBy.order || "DESC"
-        const fieldName = orderBy.fieldName || "id"
-        const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
-        const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
-
-
-        const conditions = entityMetadata.columns
-            .filter((column) => !excludedColumns.includes(column.propertyName))
-            .map((column) => {
-                console.log(`${Model}.${column.propertyName} ===========>>>>>>>`);
-                return `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`
-            })
-            .join(' OR ');
-
-        // const FilterCondition = `cast(${Model}.Test_name as varchar) IN (:...searchVal) OR cast(${Model}.id as varchar) IN (:...searchVal)`
-
-
-        const FilterCondition = filterData.map((i: any) => {
-            const fd = `cast(${Model}.${i.fieldname} as varchar) IN (:...filterVal)`
-            return fd;
-        }).join(" OR ")
-
-        // console.log("FilterCondition''''''''''''''''''", FilterCondition);
-        console.log("filterValue''''''''''''''''''", filterData, filterValue);
-
-        const [list, count] = await repository
-            .createQueryBuilder(`${Model}`)
-            .andWhere(
-                searchVal && searchVal !== ''
-                    ? conditions
-                    : '1=1',
-                { searchVal: `%${searchVal}%` }
-            )
-            .andWhere(
-                isFilter && isFilter
-                    ? FilterCondition
-                    : '1=1',
-                { filterVal: filterValue }
-            )
-            .skip(getOffset(parseInt(pageNo || 0), limit))
-            .take(limit)
-            .orderBy(fieldName, order, "NULLS LAST")
-            .getManyAndCount();
-
-
-        SuccessResponce(res, { data: list, totalRecords: count }, message)
-        return null;
-    } catch (error) {
-        ErrorResponce(res, error, messageData.UNKNOWN)
-        return null;
-    }
-}
-export async function GetTestData2<T extends ObjectLiteral>(
-    repository: Repository<T>,
-    res: Response,
-    Model: any,
-    objectForAdd: any,
-    message: any,
     other: object
 ): Promise<T | null> {
     try {
@@ -97,16 +32,16 @@ export async function GetTestData2<T extends ObjectLiteral>(
             .filter((column) => !excludedColumns.includes(column.propertyName))
             .map((column) => `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`)
             .join(' OR ');
-        console.log("=======>", conditions, "++++++++");
-
-        const conditions2 = `cast(${Model}.Test_name as varchar) IN (:...searchVal)`
+        console.log("=======>",conditions,"++++++++");
+        
+        const conditions2 = `cast(${Model}.Test_name as varchar) IN (:...searchVal)` 
         const [list, count] = await repository
             .createQueryBuilder(`${Model}`)
             .andWhere(
                 searchVal && searchVal !== ''
                     ? conditions2
                     : '1=1',
-                { searchVal: ["te12", "te1"] }
+                { searchVal: ["te12","te1"] }
             )
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
@@ -129,18 +64,18 @@ export async function GetTestData2<T extends ObjectLiteral>(
     }
 }
 
+
 export async function GetRecord<T extends ObjectLiteral>(
     repository: Repository<T>,
     res: Response,
     Model: any,
     objectForAdd: any,
     message: any,
-    other: any
+    other: object
 ): Promise<T | null> {
     try {
         // const record = await repository.find();
         const { limit, pageNo, orderBy, search } = objectForAdd
-        const { isFilter, filterValue, filterData } = other
         const searchVal = search
         const order = orderBy.order || "DESC"
         const fieldName = orderBy.fieldName || "id"
@@ -152,10 +87,7 @@ export async function GetRecord<T extends ObjectLiteral>(
             .filter((column) => !excludedColumns.includes(column.propertyName))
             .map((column) => `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`)
             .join(' OR ');
-        const FilterCondition = filterData.map((i: any) => {
-            const fd = `cast(${Model}.${i.fieldname} as varchar) IN (:...filterVal)`
-            return fd;
-        }).join(" OR ")
+
         const [list, count] = await repository
             .createQueryBuilder(`${Model}`)
             .andWhere(
@@ -163,11 +95,6 @@ export async function GetRecord<T extends ObjectLiteral>(
                     ? conditions
                     : '1=1',
                 { searchVal: `%${searchVal}%` }
-            ).andWhere(
-                isFilter && isFilter
-                    ? FilterCondition
-                    : '1=1',
-                { filterVal: filterValue }
             )
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)

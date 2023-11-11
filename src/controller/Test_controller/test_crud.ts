@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../../database/databaseConnection";
-import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
+import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, ReturnFilterValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import { Test } from "../../model/test";
 import { AddMultipalRecord, AddRecord, ExportRecord, GetRecord, GetTestData, UpdateRecord } from "../Common/commonFunction";
@@ -19,7 +19,24 @@ export const Get_Test = async (req: Request, res: Response) => {
   const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
 
   try {
-    GetTestData(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, {})
+    const data = [
+      {
+        "fieldname": "id",
+        "value": [
+         10,11
+        ]
+      },
+      {
+        "fieldname": "Test_name",
+        "value": [
+          "te10", "te2"
+        ]
+      }
+    ]
+
+    const filterValue = ReturnFilterValue(data)
+
+    GetTestData(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, { isFilter:true, filterValue: filterValue ,filterData:data})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }

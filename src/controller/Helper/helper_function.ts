@@ -440,3 +440,12 @@ export function ChangeObjectByStatus(inputArray: any, keysToKeep: any) {
         return newObj;
     });
 }
+
+
+export const ReturnFilterValue = (data: any[]) => {
+    const value: any = []
+    data.map((i: any) => {
+        value.push(...i.value)
+    })
+    return value
+} 
