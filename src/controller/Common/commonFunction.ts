@@ -32,21 +32,23 @@ export async function GetTestData<T extends ObjectLiteral>(
         const conditions = entityMetadata.columns
             .filter((column) => !excludedColumns.includes(column.propertyName))
             .map((column) => {
-                console.log(`${Model}.${column.propertyName} ===========>>>>>>>`);
+
                 return `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`
             })
             .join(' OR ');
 
-        // const FilterCondition = `cast(${Model}.Test_name as varchar) IN (:...searchVal) OR cast(${Model}.id as varchar) IN (:...searchVal)`
-
-
         const FilterCondition = filterData.map((i: any) => {
+
+
+            console.log(`===========>>>>>>> ${Model}.${i.fieldname} <<<<<<<<<<< 'json' ${i.fieldname, 'json'} `);
             const fd = `cast(${Model}.${i.fieldname} as varchar) IN (:...filterVal)`
             return fd;
+
+
         }).join(" OR ")
 
         // console.log("FilterCondition''''''''''''''''''", FilterCondition);
-        console.log("filterValue''''''''''''''''''", filterData, filterValue);
+        // // console.log("filterValue''''''''''''''''''", filterData, filterValue);
 
         const [list, count] = await repository
             .createQueryBuilder(`${Model}`)
@@ -66,6 +68,21 @@ export async function GetTestData<T extends ObjectLiteral>(
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
             .getManyAndCount();
+
+
+        const filterKey = 'name';
+        const filterValue2 = 'n';
+        const Test_name = 'a';
+
+        const filteredRecords = await repository
+            .createQueryBuilder(`${Model}`)
+            // .where(`${Model}.json->>'${filterKey}' = :filterValue2`, { filterValue2 }) 
+            // .where(`${Model}.Test_name = :Test_name`, { Test_name })
+            .where(`${Model}.json = :filterValue2`, { filterValue2 })
+            .getMany();
+
+        console.log("filteredRecords+++++++++++", filteredRecords);
+            
 
 
         SuccessResponce(res, { data: list, totalRecords: count }, message)

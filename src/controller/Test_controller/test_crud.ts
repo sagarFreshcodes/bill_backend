@@ -21,15 +21,15 @@ export const Get_Test = async (req: Request, res: Response) => {
   try {
     const data = [
       {
-        "fieldname": "id",
+        "fieldname": "json",
         "value": [
-         10,11
+         "J1"
         ]
       },
       {
         "fieldname": "Test_name",
         "value": [
-          "te10", "te2"
+          "da"
         ]
       }
     ]
