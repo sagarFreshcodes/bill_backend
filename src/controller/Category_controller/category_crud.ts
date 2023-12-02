@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../../database/databaseConnection";
-import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, ReturnFilterValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
+import { Add_user_record, DeleteRecord, ErrorResponce, ExtractFilterArrayWithKey, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, ReturnFilterValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import { Category } from "../../model/category";
 import { AddMultipalRecord, AddRecord, ExportRecord, GetRecord, UpdateRecord } from "../Common/commonFunction";
@@ -31,13 +31,14 @@ export const Get_category = async (req: Request, res: Response) => {
         "value": [
           "Desktop", "Printer"
         ]
-      }
-    ]
+      }]
+    const ExtractFilterArray = ExtractFilterArrayWithKey(req.body)
+    const filterValue = ReturnFilterValue(ExtractFilterArray)
+    console.log(filterValue);
 
-    const filterValue = ReturnFilterValue(data)
 
     // GetTestData(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, { isFilter: true, filterValue: filterValue, filterData: data })
-    GetRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, { isFilter: true, filterValue: filterValue, filterData: data })
+    GetRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, { isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray })
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
@@ -95,8 +96,8 @@ export const Import_category = async (req: any, res: Response) => {
       let categoryTebale: any = new Category();
       console.log(`csvData--------`, csvData);
 
-      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category ,{})
-  
+      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category, {})
+
     }
   } catch (error) {
     console.log(error);
