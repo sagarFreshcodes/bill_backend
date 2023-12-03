@@ -19,24 +19,8 @@ export const Get_category = async (req: Request, res: Response) => {
   const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
 
   try {
-    const data = [
-      {
-        "fieldname": "id",
-        "value": [
-          7, 8
-        ]
-      },
-      {
-        "fieldname": "category_name",
-        "value": [
-          "Desktop", "Printer"
-        ]
-      }]
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body)
     const filterValue = ReturnFilterValue(ExtractFilterArray)
-    console.log(filterValue);
-
-
     // GetTestData(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, { isFilter: true, filterValue: filterValue, filterData: data })
     GetRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, { isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray })
   } catch (error) {

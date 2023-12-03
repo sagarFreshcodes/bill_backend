@@ -1,73 +1,22 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const secretkey = "secretkey"
-const app = express();
+function transformObjectWith_values(inputObject) {
+  const outputObject = {};
 
-app.get('/api', (req, res) => {
-  res.json({
-    message: 'Welcome to the API'
-  });
-});
+  for (const key in inputObject) {
+    if (inputObject.hasOwnProperty(key)) {
+      const values = inputObject[key];
 
-app.post('/api/posts', verifyToken, (req, res) => {
-  jwt.verify(req.token, secretkey, (err, authData) => {
-    if (err) {
-      res.send({ result: "no login" });
-    } else {
-      res.json({
-        message: 'Post created...',
-        authData
+      values.forEach(value => {
+        const newKey = `${value}_values`;
+        outputObject[newKey] = value;
       });
     }
-  });
-});
-
-app.post('/api/login', (req, res) => {
-  // Mock user
-  const user = {
-    id: 1,
-    username: 'anil',
-    email: 'webanilsidhu@gmail.com'
   }
 
-  jwt.sign({ user },secretkey, { expiresIn: '300s' }, (err, token) => {
-    res.json({
-      token
-    });
-  });
-});
-
-// FORMAT OF TOKEN
-// Authorization: Bearer <access_token>
-
-// Verify Token
-
-function verifyToken(req, res, next) {
-  // Get auth header value
-  const bearerHeader = req.headers['authorization'];
-  // Check if bearer is undefined
-  if (typeof bearerHeader !== 'undefined') {
-    // Split at the space
-    const bearer = bearerHeader.split(' ');
-    // Get token from array
-    const bearerToken = bearer[1];
-    // Set the token 
-    // Next middleware
-    jwt.verify(bearerToken, secretkey, (err, authData) => {
-        if (err) {
-          res.send({ result: "no login" });
-        } else {
-            console.log(authData);
-            next();
-         
-        }
-      });
-  
-  } else {
-    // Forbidden
-    res.send({ result: "no login" });
-  }
-
+  return outputObject;
 }
 
-app.listen(5000, () => console.log('Server started on port 5000'));
+// Example usage
+const inputObject = { category_name_values: ['dda', "ddddfws"], id_values: [1] };
+const outputObject = transformObject(inputObject);
+
+console.log(outputObject);

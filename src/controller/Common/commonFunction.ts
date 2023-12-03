@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { messageData } from "../../Constant/message";
 import { AppDataSource } from "../../database/databaseConnection";
 import { EntityMetadata, EntityTarget, ObjectLiteral, Repository, UpdateResult, DeleteResult, getConnection } from 'typeorm';
-import { ChangeObjectByStatus, ErrorResponce, KeyWiseFilterData, Offset, SuccessResponce, TransformObjectsWithSelectedKey, commaSeparatedStringToArray, getOffset } from "../Helper/helper_function";
+import { ChangeObjectByStatus, ErrorResponce, KeyWiseFilterData, Offset, SuccessResponce, TransformObjectsWithSelectedKey, commaSeparatedStringToArray, getOffset, transformObjectWith_values } from "../Helper/helper_function";
+import { log } from "console";
 
 export async function GetTestData<T extends ObjectLiteral>(
     repository: Repository<T>,
@@ -118,16 +119,7 @@ export async function GetTestData2<T extends ObjectLiteral>(
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
-            .getManyAndCount();
-
-        // const testData = await repository.createQueryBuilder("user") 
-        //     .andWhere(
-        //         searchVal && searchVal !== ''
-        //             ? conditions
-        //             : '1=1',
-        //         { searchVal: `%${searchVal}%` }
-        //     ) 
-        //     .getMany()
+            .getManyAndCount(); 
         SuccessResponce(res, { data: list, totalRecords: count }, message)
         return null;
     } catch (error) {
@@ -148,23 +140,31 @@ export async function GetRecord<T extends ObjectLiteral>(
         const { limit, pageNo, orderBy, search } = objectForAdd
         const { isFilter, filterValue, filterData } = other
         const keyWiseFilterData = KeyWiseFilterData(filterData)
+        const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData)
         const searchVal = search
         const order = orderBy.order || "DESC"
         const fieldName = orderBy.fieldName || "id"
         const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
         const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
 
-    
+
         const conditions = entityMetadata.columns
             .filter((column) => !excludedColumns.includes(column.propertyName))
             .map((column) => `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`)
             .join(' OR ');
 
 
-        const FilterCondition = filterData.map((i: any) => {
-            const fd = `cast(${Model}.${i.fieldname} as varchar) IN (:...${i.fieldname}_values)`
+
+        const FilterCondition= filterData.map((i: any) => {
+            const filterKey = Object.keys(keyWiseFilterData).filter((e: string | string[]) => e.includes(i.fieldname))[0]
+            const valuesUnderKey = keyWiseFilterData[filterKey]  
+            const KeyFilterCondition = valuesUnderKey.map((v: any) => {
+                const fd2 = `cast(${Model}.${i.fieldname} as varchar) ILIKE :${v}_values`
+                return fd2;
+            }).join(' OR ') 
+            const fd = KeyFilterCondition
             return fd;
-        }).join(" OR ")
+        }).join(" OR ") 
 
         const [list, count] = await repository
             .createQueryBuilder(`${Model}`)
@@ -177,7 +177,7 @@ export async function GetRecord<T extends ObjectLiteral>(
                 isFilter && isFilter
                     ? FilterCondition
                     : '1=1',
-                keyWiseFilterData
+                { ...keyWiseFilterValues }
             )
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
@@ -201,8 +201,7 @@ export async function AddRecord<T extends ObjectLiteral>(
         const userInserted = await repository.save(tableObject);
         SuccessResponce(res, { data: { data: userInserted } }, message)
         return null; // Return the saved entity
-    } catch (error) {
-        // Handle the error here 
+    } catch (error) { 
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }

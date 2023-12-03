@@ -468,3 +468,20 @@ export function ExtractFilterArrayWithKey(obj: Record<string, any>): { fieldname
 
     return result;
 }
+
+export function transformObjectWith_values(inputObject: any) {
+    const outputObject: any = {};
+
+    for (const key in inputObject) {
+        if (inputObject.hasOwnProperty(key)) {
+            const values = inputObject[key];
+
+            values.forEach((value: any) => {
+                const newKey = `${value}_values`;
+                outputObject[newKey] = `%${value}%`;
+            });
+        }
+    }
+
+    return outputObject;
+}
