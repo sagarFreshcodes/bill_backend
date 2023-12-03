@@ -15,6 +15,8 @@ export const messageData = {
     TEST_UPDATE_SUCCESSFULL: "Test Update successfully",
     TEST_DELETE_SUCCESSFULL: "Test Delete successfully",
 
+    
+
 
 // user
     USER_GET_SUCCESSFULL: "Get all record successfully",
@@ -27,4 +29,12 @@ export const messageData = {
     CATEGORY_ADD_SUCCESSFULL: "Category Added Successfully",
     CATEGORY_UPDATE_SUCCESSFULL: "Category Update successfully",
     CATEGORY_DELETE_SUCCESSFULL: "Category Delete successfully",
+
+
+
+    //category
+    ATTRIBUTE_GET_SUCCESSFULL: "Get all record successfully",
+    ATTRIBUTE_ADD_SUCCESSFULL: "attribute Added Successfully",
+    ATTRIBUTE_UPDATE_SUCCESSFULL: "attribute Update successfully",
+    ATTRIBUTE_DELETE_SUCCESSFULL: "attribute Delete successfully",
 }

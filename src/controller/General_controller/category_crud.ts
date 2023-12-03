@@ -21,7 +21,6 @@ export const Get_category = async (req: Request, res: Response) => {
   try {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body)
     const filterValue = ReturnFilterValue(ExtractFilterArray)
-    // GetTestData(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, { isFilter: true, filterValue: filterValue, filterData: data })
     GetRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, { isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray })
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
@@ -79,8 +78,8 @@ export const Import_category = async (req: any, res: Response) => {
       const csvData: any = await parseCSVFile(req.files, options);
       let categoryTebale: any = new Category();
       console.log(`csvData--------`, csvData);
-
-      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category, {})
+      const keysToKeep:any = ['status', 'category_name'];
+      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category, keysToKeep ,{})
 
     }
   } catch (error) {

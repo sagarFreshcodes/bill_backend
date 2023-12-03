@@ -93,8 +93,8 @@ export const Import_Test = async (req: any, res: Response) => {
       const csvData: any = await parseCSVFile(req.files, options);
       let TestTebale: any = new Test();
       console.log(`csvData--------`, csvData);
-
-      AddMultipalRecord(TestRepo, TestTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Test ,{})
+      const keysToKeep = ['status', 'category_name'];
+      AddMultipalRecord(TestRepo, TestTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Test, keysToKeep,{})
   
     }
   } catch (error) {

@@ -119,7 +119,7 @@ export async function GetTestData2<T extends ObjectLiteral>(
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
-            .getManyAndCount(); 
+            .getManyAndCount();
         SuccessResponce(res, { data: list, totalRecords: count }, message)
         return null;
     } catch (error) {
@@ -155,16 +155,16 @@ export async function GetRecord<T extends ObjectLiteral>(
 
 
 
-        const FilterCondition= filterData.map((i: any) => {
+        const FilterCondition = filterData.map((i: any) => {
             const filterKey = Object.keys(keyWiseFilterData).filter((e: string | string[]) => e.includes(i.fieldname))[0]
-            const valuesUnderKey = keyWiseFilterData[filterKey]  
+            const valuesUnderKey = keyWiseFilterData[filterKey]
             const KeyFilterCondition = valuesUnderKey.map((v: any) => {
                 const fd2 = `cast(${Model}.${i.fieldname} as varchar) ILIKE :${v}_values`
                 return fd2;
-            }).join(' OR ') 
+            }).join(' OR ')
             const fd = KeyFilterCondition
             return fd;
-        }).join(" OR ") 
+        }).join(" OR ")
 
         const [list, count] = await repository
             .createQueryBuilder(`${Model}`)
@@ -201,7 +201,7 @@ export async function AddRecord<T extends ObjectLiteral>(
         const userInserted = await repository.save(tableObject);
         SuccessResponce(res, { data: { data: userInserted } }, message)
         return null; // Return the saved entity
-    } catch (error) { 
+    } catch (error) {
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }
@@ -216,17 +216,17 @@ export async function AddMultipalRecord<T extends ObjectLiteral>(
     res: Response,
     message: any,
     recordArray: any,
-    entity: any,
+    entity: any, keysToKeep: any,
     other: object
 ): Promise<T | null> {
     try {
 
         // const userInserted = await repository.save(tableObject);
-        const keysToKeep = ['status', 'category_name'];
+
         const validArray = ChangeObjectByStatus(recordArray, keysToKeep);
 
+        console.log("validArray============>>>>>>>>>>>", validArray);
         for (const record of validArray) {
-
             await AppDataSource.createQueryBuilder()
                 .insert()
                 .into(entity)

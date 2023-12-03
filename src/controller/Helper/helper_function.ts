@@ -324,14 +324,7 @@ export function FilterObjectsForValidDatabaseField(inputArray: any[], options: F
         });
 }
 
-// Example usage:
-// const inputArray = [
-//     { category_name: 'Printer', status: 'active', price: 100, jjj: 'jj' },
-//     { category_name: 'Desktop', status: 'active', price: null },
-//     { category_name: 'Computer', status: 'active', price: undefined },
-//     { category_name: 'Electronics', status: 'active', price: '' },
-//     { category_name: 'jjj' },
-// ];
+
 
 
 export function parseCSVFile(csvFile: any, options: any) {
