@@ -192,15 +192,15 @@ export async function GetRecord<T extends ObjectLiteral>(
 
 
 
-            // const categoryRepo = AppDataSource.getRepository(Category) 
-            // const category = await categoryRepo.findBy({id:1})  
-            // console.log("category================>",category,); 
+        // const categoryRepo = AppDataSource.getRepository(Category) 
+        // const category = await categoryRepo.findBy({id:1})  
+        // console.log("category================>",category,); 
 
 
         SuccessResponce(res, { data: list, totalRecords: count }, message)
         return null;
     } catch (error) {
-        console.log("2512============>",error);
+        console.log("2512============>", error);
         ErrorResponce(res, error, messageData.UNKNOWN)
         return null;
     }
@@ -218,21 +218,25 @@ export async function AddRecord<T extends ObjectLiteral>(
     tableObject: any,
     res: Response,
     message: any,
-    relationOption:RelationOptionSchema,
+    relationOption: RelationOptionSchema,
     other: object
 ): Promise<T | null> {
     try {
-        const {isRelation,relativeRepo,relateIds,relativeField} = relationOption
+        const { isRelation, relativeRepo, relateIds, relativeField } = relationOption
         if (isRelation) {
-            const categoryRepo = AppDataSource.getRepository(Category) 
+            const categoryRepo = AppDataSource.getRepository(Category)
             // const category = await categoryRepo.find({where:{id:[1,2,3]}})  
-            const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', {ids: relateIds }).getMany();
-            console.log("category================>",IdCollaction,);
-            if(relativeField) tableObject[relativeField] = IdCollaction
+            const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
+            // const IdCollaction = await categoryRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
+            console.log("category================>", IdCollaction,);
+            // relativeField?tableObject[relativeField] = IdCollaction:null
+            tableObject["categories"] = IdCollaction
+
+            // relativeField? tableObject[relativeField] = IdCollaction:null
         }
-       
+
         // console.log("tableObject================>",tableObject,);
-        
+
         const userInserted = await repository.save(tableObject);
         SuccessResponce(res, { data: { data: userInserted } }, message)
         return null; // Return the saved entity

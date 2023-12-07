@@ -10,8 +10,8 @@ export class Attribute {
     @PrimaryGeneratedColumn()
     "id": number
 
-    @Column()
-    "category_id": string 
+    // @Column()
+    // "category_id": string 
 
     @Column({ nullable: true })
     "name": String;

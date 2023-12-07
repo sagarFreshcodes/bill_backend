@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../../database/databaseConnection";
-import { Add_user_record, DeleteRecord, ErrorResponce, ExtractFilterArrayWithKey, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, ReturnFilterValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
+import { Add_user_record, DeleteRecord, ErrorResponce, ExtractFilterArrayWithKey, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, ReturnFilterValue, extractNumbersFromString, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import { Attribute } from "../../model/attribute";
 import { AddMultipalRecord, AddRecord, ExportRecord, GetRecord, RelationOptionSchema, UpdateRecord } from "../Common/commonFunction";
@@ -30,20 +30,21 @@ export const Get_attribute = async (req: Request, res: Response) => {
 
 
 export const Add_attribute = async (req: Request, res: Response) => {
+  const { category_id } = req.body
   try {
     const keysArray = [
-      { name: "" }, { status: 1 }, { categories: "" },{ category_id: "" }, { is_require: true }, { is_field: `text` }, { position: 1 },
+      { name: "" }, { status: 1 }, { category_id: "" }, { is_require: true }, { is_field: `text` }, { position: 1 },
     ];
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
     let attribute: any = new Attribute();
     attribute = { ...attribute, ...objectForAdd }
-    console.log(attribute);
+    // console.log(` extractNumbersFromString(category_id);===========>`, category_id,extractNumbersFromString(category_id));
 
-    const relativeRepo = AppDataSource.getRepository(Category) 
-    const relateIds = [1] //[5,7]
+    const relativeRepo = AppDataSource.getRepository(Category)
+    const relateIds: number[] | never[] = [1]
     const relativeField = "categories"
-    const RelationOption: RelationOptionSchema = {isRelation:true,relativeRepo,relateIds,relativeField}
-    AddRecord(attributeRepo, attribute, res, messageData.ATTRIBUTE_ADD_SUCCESSFULL,RelationOption,{})
+    const RelationOption: RelationOptionSchema = { isRelation: true, relativeRepo, relateIds, relativeField }
+    AddRecord(attributeRepo, attribute, res, messageData.ATTRIBUTE_ADD_SUCCESSFULL, RelationOption, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }

@@ -478,3 +478,13 @@ export function transformObjectWith_values(inputObject: any) {
 
     return outputObject;
 }
+
+
+export function extractNumbersFromString(inputString: string): number[] {
+    const numbersArray: number[] = inputString
+        .split(',')
+        .map((item) => parseInt(item.trim(), 10))
+        .filter((number) => !isNaN(number));
+
+    return numbersArray;
+}
