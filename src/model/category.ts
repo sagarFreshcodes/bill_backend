@@ -16,20 +16,24 @@ export class Category {
     @Column()
     status: number 
 
-    @ManyToMany(() => Attribute, attribute => attribute.categories)
-    @JoinTable(   {
-        name: "attributes_categories",
-        joinColumn: {
-          name: "category_id",
-          referencedColumnName: "id"
-        },
-        inverseJoinColumn: {
-          name: "attribute_id",
-          referencedColumnName: "id"
-        }
-      })
-    "attributes": Attribute[];
+    // @ManyToMany(() => Attribute, attribute => attribute.categories)
+    // @JoinTable(   {
+    //     name: "attributes_categories",
+    //     joinColumn: {
+    //       name: "category_id",
+    //       referencedColumnName: "id"
+    //     },
+    //     inverseJoinColumn: {
+    //       name: "attribute_id",
+    //       referencedColumnName: "id"
+    //     }
+    //   })
+    // "attributes": Attribute[];
  
+    @ManyToMany(() => Attribute )
+    @JoinTable()
+    "attributes": Attribute[];
+
     @CreateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })
     "createdDate": Date;
 

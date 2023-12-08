@@ -172,7 +172,7 @@ export async function GetRecord<T extends ObjectLiteral>(
         }).join(" OR ")
 
         const [list, count] = await repository
-            .createQueryBuilder(`${Model}`)
+            .createQueryBuilder(`${Model}`)    
             .andWhere(
                 searchVal && searchVal !== ''
                     ? conditions
@@ -226,6 +226,7 @@ export async function AddRecord<T extends ObjectLiteral>(
         if (isRelation) {
             const categoryRepo = AppDataSource.getRepository(Category)
             // const category = await categoryRepo.find({where:{id:[1,2,3]}})  
+            console.log(relateIds,'relateIds****')
             const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
             // const IdCollaction = await categoryRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
             console.log("category================>", IdCollaction,);
