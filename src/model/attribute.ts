@@ -41,9 +41,20 @@ export class Attribute {
     //     }
     //   })
     // "categories": Category[];
-    
+
     @ManyToMany(() => Category)
-    @JoinTable()
+    @JoinTable({
+        name: "attributes_categories",
+        joinColumn: {
+            name: "attribute_id",
+            referencedColumnName: "id"
+        },
+        inverseJoinColumn: {
+            name: "category_id",
+            referencedColumnName: "id"
+        }
+    })
+    // @JoinTable()
     categories: Category[]
 
     @CreateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })

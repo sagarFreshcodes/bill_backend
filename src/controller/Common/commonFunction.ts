@@ -173,6 +173,7 @@ export async function GetRecord<T extends ObjectLiteral>(
 
         const [list, count] = await repository
             .createQueryBuilder(`${Model}`)    
+            // .leftJoinAndSelect(`${Model}.categories`, "category")
             .andWhere(
                 searchVal && searchVal !== ''
                     ? conditions
