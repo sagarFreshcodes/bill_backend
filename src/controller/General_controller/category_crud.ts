@@ -18,7 +18,7 @@ export const Get_category = async (req: Request, res: Response) => {
   try {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body)
     const filterValue = ReturnFilterValue(ExtractFilterArray)
-    GetRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, { isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray })
+    GetRecord(categoryRepo, res, Category, objectForAdd, messageData.CATEGORY_GET_SUCCESSFULL, { isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray, modelName: "category" })
   } catch (error) {  
     ErrorResponce(res, error, messageData.UNKNOWN)
   }

@@ -143,12 +143,13 @@ export async function GetRecord<T extends ObjectLiteral>(
     try {
         // const record = await repository.find();
         const { limit, pageNo, orderBy, search } = objectForAdd
-        const { isFilter, filterValue, filterData } = other
+        const { isFilter, filterValue, filterData, modelName } = other
         const keyWiseFilterData = KeyWiseFilterData(filterData)
         const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData)
         const searchVal = search
         const order = orderBy.order || "DESC"
-        const fieldName = orderBy.fieldName || "id"
+        const fieldName = `${orderBy.fieldName}`.split(".").length == 2 ? orderBy.fieldName : `${modelName}.${orderBy.fieldName}` || "id"
+
         const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
         const excludedColumns = ['id', 'createdDate', 'updatedDate',]; // Add column names you want to exclude
 
@@ -157,8 +158,6 @@ export async function GetRecord<T extends ObjectLiteral>(
             .filter((column) => !excludedColumns.includes(column.propertyName))
             .map((column) => `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`)
             .join(' OR ');
-
-        console.log("conditions=2512============>", conditions);
 
 
         const FilterCondition = filterData.map((i: any) => {
@@ -171,28 +170,24 @@ export async function GetRecord<T extends ObjectLiteral>(
             const fd = KeyFilterCondition
             return fd;
         }).join(" OR ")
-
-
         const [list, count] = await repository
-            .createQueryBuilder(`${Model}`) 
-            // .getMany()
-            .andWhere(
-                searchVal && searchVal !== ''
-                    ? conditions
-                    : '1=1',
-                { searchVal: `%${searchVal}%` }
-            )
+            .createQueryBuilder(`${modelName}`)
+            .leftJoinAndSelect(`${modelName}.categories`, "category")
             .andWhere(
                 isFilter && isFilter
                     ? FilterCondition
                     : '1=1',
                 { ...keyWiseFilterValues }
             )
-          
+            .andWhere(
+                searchVal && searchVal !== ''
+                    ? conditions
+                    : '1=1',
+                { searchVal: `%${searchVal}%` }
+            )
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
-            .leftJoinAndSelect(`${Model}.categories`, "category")
             .getManyAndCount();
 
 
@@ -229,11 +224,11 @@ export async function AddRecord<T extends ObjectLiteral>(
 ): Promise<T | null> {
     try {
         const { isRelation, relativeRepo, relateIds, relativeField } = relationOption
-        if (isRelation) { 
+        if (isRelation) {
             const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
             // @ts-ignore
-            tableObject[relativeField] = IdCollaction 
-        } 
+            tableObject[relativeField] = IdCollaction
+        }
 
         const userInserted = await repository.save(tableObject);
         SuccessResponce(res, { data: { data: userInserted } }, message)
