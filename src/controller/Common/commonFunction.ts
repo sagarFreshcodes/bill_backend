@@ -158,6 +158,7 @@ export async function GetRecord<T extends ObjectLiteral>(
             .map((column) => `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`)
             .join(' OR ');
 
+        console.log("conditions=2512============>", conditions);
 
 
         const FilterCondition = filterData.map((i: any) => {
@@ -171,23 +172,27 @@ export async function GetRecord<T extends ObjectLiteral>(
             return fd;
         }).join(" OR ")
 
+
         const [list, count] = await repository
-            .createQueryBuilder(`${Model}`)    
-            // .leftJoinAndSelect(`${Model}.categories`, "category")
+            .createQueryBuilder(`${Model}`) 
+            // .getMany()
             .andWhere(
                 searchVal && searchVal !== ''
                     ? conditions
                     : '1=1',
                 { searchVal: `%${searchVal}%` }
-            ).andWhere(
+            )
+            .andWhere(
                 isFilter && isFilter
                     ? FilterCondition
                     : '1=1',
                 { ...keyWiseFilterValues }
             )
+          
             .skip(getOffset(parseInt(pageNo || 0), limit))
             .take(limit)
             .orderBy(fieldName, order, "NULLS LAST")
+            .leftJoinAndSelect(`${Model}.categories`, "category")
             .getManyAndCount();
 
 
@@ -224,20 +229,11 @@ export async function AddRecord<T extends ObjectLiteral>(
 ): Promise<T | null> {
     try {
         const { isRelation, relativeRepo, relateIds, relativeField } = relationOption
-        if (isRelation) {
-            const categoryRepo = AppDataSource.getRepository(Category)
-            // const category = await categoryRepo.find({where:{id:[1,2,3]}})  
-            console.log(relateIds,'relateIds****')
+        if (isRelation) { 
             const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
-            // const IdCollaction = await categoryRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
-            console.log("category================>", IdCollaction,);
-            // relativeField?tableObject[relativeField] = IdCollaction:null
-            tableObject["categories"] = IdCollaction
-
-            // relativeField? tableObject[relativeField] = IdCollaction:null
-        }
-
-        // console.log("tableObject================>",tableObject,);
+            // @ts-ignore
+            tableObject[relativeField] = IdCollaction 
+        } 
 
         const userInserted = await repository.save(tableObject);
         SuccessResponce(res, { data: { data: userInserted } }, message)

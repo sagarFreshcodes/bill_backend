@@ -37,13 +37,11 @@ export const Add_attribute = async (req: Request, res: Response) => {
     ];
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray)
     let attribute: any = new Attribute();
-    attribute = { ...attribute, ...objectForAdd }
-    // console.log(` extractNumbersFromString(category_id);===========>`, category_id,extractNumbersFromString(category_id));
-
+    attribute = { ...attribute, ...objectForAdd } 
     const relativeRepo = AppDataSource.getRepository(Category)
-    const relateIds: number[] | never[] = [1]
+    const relateIds: number[] | never[] = extractNumbersFromString(category_id)
     const relativeField = "categories"
-    const RelationOption: RelationOptionSchema = { isRelation: true, relativeRepo, relateIds, relativeField }
+    const RelationOption: RelationOptionSchema = { isRelation: relateIds.length>0, relativeRepo, relateIds, relativeField }
     AddRecord(attributeRepo, attribute, res, messageData.ATTRIBUTE_ADD_SUCCESSFULL, RelationOption, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
