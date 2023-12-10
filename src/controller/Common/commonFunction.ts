@@ -229,6 +229,7 @@ export async function AddRecord<T extends ObjectLiteral>(
             // @ts-ignore
             tableObject[relativeField] = IdCollaction
         }
+        console.log("tableObject", tableObject);
 
         const userInserted = await repository.save(tableObject);
         SuccessResponce(res, { data: { data: userInserted } }, message)
@@ -248,7 +249,7 @@ export async function AddMultipalRecord<T extends ObjectLiteral>(
     res: Response,
     message: any,
     recordArray: any,
-    entity: any, keysToKeep: any,
+    entity: any, keysToKeep: any, RelationOption: RelationOptionSchema,
     other: object
 ): Promise<T | null> {
     try {
@@ -257,7 +258,18 @@ export async function AddMultipalRecord<T extends ObjectLiteral>(
 
         const validArray = ChangeObjectByStatus(recordArray, keysToKeep);
 
-        console.log("validArray============>>>>>>>>>>>", validArray);
+        for (const i in validArray) {
+            const { relativeRepo, relativeField } = RelationOption
+            if (validArray[i].isRelation == true) {
+
+                const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: validArray[i].category_id }).getMany();
+                // @ts-ignore
+                validArray[i][relativeField] = IdCollaction 
+                console.log("IdCollaction==============", IdCollaction);
+            }
+        }
+
+        console.log("validArray==============", validArray);
         for (const record of validArray) {
             await AppDataSource.createQueryBuilder()
                 .insert()
@@ -265,6 +277,8 @@ export async function AddMultipalRecord<T extends ObjectLiteral>(
                 .values(record)
                 .execute();
         }
+
+
 
         SuccessResponce(res, { data: { data: {} } }, message)
         return null; // Return the saved entity
@@ -281,12 +295,20 @@ export async function UpdateRecord<T extends ObjectLiteral>(
     updatedData: Partial<T>,
     res: Response,
     Model: any,
-    message: any,
+    message: any, relationOption: RelationOptionSchema,
     other: object
 ): Promise<UpdateResult | null> {
 
 
     try {
+
+        const { isRelation, relativeRepo, relateIds, relativeField } = relationOption
+
+        if (isRelation) {
+            const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: relateIds }).getMany();
+            // @ts-ignore
+            updatedData[relativeField] = IdCollaction
+        }
         await AppDataSource
             .createQueryBuilder()
             .update(Model, updatedData)

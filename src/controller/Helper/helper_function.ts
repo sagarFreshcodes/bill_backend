@@ -264,7 +264,14 @@ export function ObjectWithRequireKeysValue(inputObj: any, keysArray: { [key: str
 
     return resultObj;
 }
+export function extractNumbersFromString(inputString: string): number[] { 
+    const numbersArray: number[] = inputString
+        .split(',')
+        .map((item) => parseInt(item.trim(), 10))
+        .filter((number) => !isNaN(number));
 
+    return numbersArray;
+}
 export function ExtractKeys(inputObject: any, keysToExtract: string[]): Record<string, any> {
     const extractedObject: Record<string, any> = {};
     for (const key of keysToExtract) {
@@ -318,7 +325,20 @@ export function FilterObjectsForValidDatabaseField(inputArray: any[], options: F
             // Keep only the specified keys and their values
             const filteredObj: { [key: string]: any } = {};
             keysToKeep.forEach((key) => {
-                filteredObj[key] = obj[key];
+                // console.log("key+++++++++++++++", key)
+                switch (key) {
+                    case "category_id":
+                        const relateIds: number[] | never[] = extractNumbersFromString(`${obj[key]}`)
+                        const isRelation: any = relateIds.length > 0 ? true : false
+                        filteredObj.isRelation = isRelation;
+                        filteredObj[key] = relateIds;
+                        break;
+
+                    default:
+                        filteredObj[key] = obj[key];
+                        break;
+                }
+
             });
             return filteredObj;
         });
@@ -335,7 +355,6 @@ export function parseCSVFile(csvFile: any, options: any) {
                     console.error(err);
                     return;
                 }
-
                 // Parse the CSV data
                 parse.parse(data, {
                     header: true, // Treat the first row as the header row
@@ -345,8 +364,6 @@ export function parseCSVFile(csvFile: any, options: any) {
 
                         const data = FilterObjectsForValidDatabaseField(results.data, options)
                         resolve(data)
-
-
                     },
                 });
             });
@@ -480,11 +497,3 @@ export function transformObjectWith_values(inputObject: any) {
 }
 
 
-export function extractNumbersFromString(inputString: string): number[] {
-    const numbersArray: number[] = inputString
-        .split(',')
-        .map((item) => parseInt(item.trim(), 10))
-        .filter((number) => !isNaN(number));
-
-    return numbersArray;
-}

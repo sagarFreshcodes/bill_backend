@@ -65,7 +65,8 @@ export const Edit_Test = async (req: Request, res: Response) => {
     const { id } = req.body
     const keysToExtract = ['Test_name', 'status'];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
-    UpdateRecord(TestRepo, id, objectForUpadate, res, Test, messageData.TEST_UPDATE_SUCCESSFULL, {})
+    const RelationOption: RelationOptionSchema = { isRelation: false }
+    UpdateRecord(TestRepo, id, objectForUpadate, res, Test, messageData.TEST_UPDATE_SUCCESSFULL, RelationOption, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
@@ -94,7 +95,9 @@ export const Import_Test = async (req: any, res: Response) => {
       let TestTebale: any = new Test();
       console.log(`csvData--------`, csvData);
       const keysToKeep = ['status', 'category_name'];
-      AddMultipalRecord(TestRepo, TestTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Test, keysToKeep,{})
+
+      const RelationOption: RelationOptionSchema = { isRelation: false }
+      AddMultipalRecord(TestRepo, TestTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Test, keysToKeep, RelationOption,{})
   
     }
   } catch (error) {

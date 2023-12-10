@@ -50,10 +50,16 @@ export const Add_attribute = async (req: Request, res: Response) => {
 
 export const Edit_attribute = async (req: Request, res: Response) => {
   try {
-    const { id } = req.body
+    const { id, category_id } = req.body
     const keysToExtract = ['name', "is_field", "is_require", "category_id", 'status'];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
-    UpdateRecord(attributeRepo, id, objectForUpadate, res, Attribute, messageData.ATTRIBUTE_UPDATE_SUCCESSFULL, {})
+
+
+    const relativeRepo = AppDataSource.getRepository(Category)
+    const relateIds: number[] | never[] = extractNumbersFromString(category_id)
+    const relativeField = "categories"
+    const RelationOption: RelationOptionSchema = { isRelation: relateIds.length > 0, relativeRepo, relateIds, relativeField }
+    UpdateRecord(attributeRepo, id, objectForUpadate, res, Attribute, messageData.ATTRIBUTE_UPDATE_SUCCESSFULL, RelationOption, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
@@ -77,10 +83,13 @@ export const Import_attribute = async (req: any, res: Response) => {
       };
 
       const csvData: any = await parseCSVFile(req.files, options);
-      let attributeTable: any = new Attribute();
-      console.log(`csvData--------`, csvData);
-      const keysToKeep: any = ["category_id", 'name', 'is_require', 'is_field', "status", "position"]
-      AddMultipalRecord(attributeRepo, attributeTable, res, messageData.ATTRIBUTE_ADD_SUCCESSFULL, csvData, Attribute, keysToKeep, {})
+      let attributeTable: any = new Attribute(); 
+      const keysToKeep: any = ["category_id", 'name', 'is_require', 'is_field', "status", "position", "isRelation"]
+      const relativeRepo = AppDataSource.getRepository(Category)
+      const relativeField = "categories"
+      const RelationOption: RelationOptionSchema = { isRelation: false, relativeRepo, relateIds:"", relativeField }
+  
+      AddMultipalRecord(attributeRepo, attributeTable, res, messageData.ATTRIBUTE_ADD_SUCCESSFULL, csvData, Attribute, keysToKeep, RelationOption, {})
     }
   } catch (error) {
     console.log(error);

@@ -45,19 +45,19 @@ export const Add_category = async (req: Request, res: Response) => {
 
 export const Edit_category = async (req: Request, res: Response) => {
   try {
-    const { id } = req.body
+    const { id, } = req.body
     const keysToExtract = ['category_name', 'status'];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
-    UpdateRecord(categoryRepo, id, objectForUpadate, res, Category, messageData.CATEGORY_UPDATE_SUCCESSFULL, {})
+
+    const RelationOption: RelationOptionSchema = { isRelation: false }
+    UpdateRecord(categoryRepo, id, objectForUpadate, res, Category, messageData.CATEGORY_UPDATE_SUCCESSFULL, RelationOption, {})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }
 
 
-export const Import_category = async (req: any, res: Response) => {
-
-
+export const Import_category = async (req: any, res: Response) => { 
   try {
     if (!req.files) {
       console.log("csvData", typeof req.files);
@@ -77,7 +77,8 @@ export const Import_category = async (req: any, res: Response) => {
       let categoryTebale: any = new Category();
       console.log(`csvData--------`, csvData);
       const keysToKeep:any = ['status', 'category_name'];
-      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category, keysToKeep ,{})
+      const RelationOption: RelationOptionSchema = { isRelation: false }
+      AddMultipalRecord(categoryRepo, categoryTebale, res, messageData.USER_ADD_SUCCESSFULL, csvData, Category, keysToKeep, RelationOption ,{})
 
     }
   } catch (error) {
