@@ -264,21 +264,10 @@ export async function AddMultipalRecord<T extends ObjectLiteral>(
 
                 const IdCollaction = await relativeRepo.createQueryBuilder(`object`).where('object.id IN (:...ids)', { ids: validArray[i].category_id }).getMany();
                 // @ts-ignore
-                validArray[i][relativeField] = IdCollaction 
-                console.log("IdCollaction==============", IdCollaction);
+                validArray[i][relativeField] = IdCollaction  
             }
-        }
-
-        console.log("validArray==============", validArray);
-        for (const record of validArray) {
-            await AppDataSource.createQueryBuilder()
-                .insert()
-                .into(entity)
-                .values(record)
-                .execute();
-        }
-
-
+        } 
+            await repository.save(validArray) 
 
         SuccessResponce(res, { data: { data: {} } }, message)
         return null; // Return the saved entity
