@@ -44,6 +44,8 @@ export const Add_attribute = async (req: Request, res: Response) => {
     const RelationOption: RelationOptionSchema = { isRelation: relateIds.length>0, relativeRepo, relateIds, relativeField }
     AddRecord(attributeRepo, attribute, res, messageData.ATTRIBUTE_ADD_SUCCESSFULL, RelationOption, {})
   } catch (error) {
+    console.log("error=============",error);
+    
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }
