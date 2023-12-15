@@ -60,6 +60,8 @@ export const Edit_attribute = async (req: Request, res: Response) => {
     const RelationOption: RelationOptionSchema = { isRelation: relateIds.length > 0, relativeRepo, relateIds, relativeField }
     UpdateRecord(attributeRepo, id, objectForUpadate, res, Attribute, messageData.ATTRIBUTE_UPDATE_SUCCESSFULL, RelationOption, {})
   } catch (error) {
+
+    
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
 }

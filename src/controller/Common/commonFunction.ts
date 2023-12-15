@@ -302,30 +302,31 @@ export async function UpdateRecord<T extends ObjectLiteral>(
       relationOption;
     const Record = isRelation
       ? await repository.findOne({
-          where: { id: 1 },
+          where: { id: recordId },
           relations: [relativeField],
         })
-      : await repository.findOne({ where: { id: 1 } });
+      : await repository.findOne({ where: { id: recordId } });
     if (isRelation) {
       const IdCollaction = await relativeRepo
         .createQueryBuilder(`object`)
         .where("object.id IN (:...ids)", { ids: relateIds })
         .getMany();
-      Record[`${relativeField}`] = IdCollaction;
-
-        // remove all relation 
-        // quary for remove all relation 
-        // Record[`${relativeField}`] = []
-        // quary for remove relation ship by id
-        // let removeId = [1,2]
-        // Record[`${relativeField}`] = Record[`${relativeField}`].filter((post:any) =>  !removeId.includes(post.id));
-
+      // @ts-ignore
+      Record[relativeField] = IdCollaction;
+      console.log("Record==============?", recordId);
+      // remove all relation
+      // quary for remove all relation
+      // Record[`${relativeField}`] = []
+      // quary for remove relation ship by id
+      // let removeId = [1,2]
+      // Record[`${relativeField}`] = Record[`${relativeField}`].filter((post:any) =>  !removeId.includes(post.id));
     }
     Object.keys(updatedData).map((i) => (Record[i] = updatedData[i]));
     const data = await repository.save(Record);
     SuccessResponce(res, { data: data }, message);
     return null;
   } catch (error) {
+    console.log(error);
     ErrorResponce(res, error, messageData.UNKNOWN);
     return null;
   }
