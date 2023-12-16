@@ -164,29 +164,33 @@ export const Import_attribute = async (req: any, res: Response) => {
       const relativeRepo = AppDataSource.getRepository(Categories);
       const relativeField = "categories";
       const RelationOption: RelationOptionSchema = {
-        isRelation: false,
+        isRelation: true,
         relativeRepo,
         relateIds: "",
         relativeField,
       };
 
-      const tableRepository = AppDataSource.getRepository("Attribute");
-      const AllAtributes = await tableRepository.find({
+      const tableRepository = AppDataSource.getRepository("Categories");
+      const AllCategories = await tableRepository.find({
         select: {
-          name: true,
+          category_name: true,
           id: true,
         },
       });
+      // console.log(`csvData`, csvData);
+      // console.log(`AllAtributes===============>`, AllCategories);
+
       const modifyCategoryIds = ModifyCategoryIds({
         existingObjects: csvData,
-        inputArray: AllAtributes,
-        defaultId: 27,
+        inputArray: AllCategories,
+        defaultId: 100,
       });
       console.log(
         "modifyCategoryIds==================>",
         modifyCategoryIds,
         "====="
       );
+
       if (modifyCategoryIds == "noMatch") {
         ErrorResponce(
           res,

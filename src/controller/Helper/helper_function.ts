@@ -588,7 +588,7 @@ export function ModifyCategoryIds({ existingObjects, inputArray, defaultId }) {
   // Create a map for quick lookup of objects in the second array by name
   const secondArrayMap: { [key: string]: { id: number; name: string } } =
     inputArray.reduce((map: any, obj: any) => {
-      map[obj.name] = obj;
+      map[obj.category_name] = obj;
       return map;
     }, {});
 
@@ -599,11 +599,15 @@ export function ModifyCategoryIds({ existingObjects, inputArray, defaultId }) {
       if (matchingObject) {
         obj.category_id = [matchingObject.id];
         obj.position = 0;
+        obj.isRelation = true;
 
         return obj;
       } else {
-        obj.category_id = defaultId;
+        obj.category_id = [defaultId];
         obj.position = 0;
+        obj.isRelation = true;
+
+        return obj;
       }
     })
     .filter(Boolean) as MyObject[]; // Filter out null values

@@ -360,12 +360,22 @@ export async function UpdateRecord<T extends ObjectLiteral>(
 
 export async function DeleteMultipalRecords(req: Request, res: Response) {
   const { ids, tableName } = req.body;
+  let Table = tableName;
+   switch (tableName.toLowerCase()) {
+     case "attributes":
+       Table = "Attribute";
+       break;
+
+     default:
+       Table = tableName;
+       break;
+   }
   const idsArray = commaSeparatedStringToArray(ids);
 
   try {
-    const tableRepository = AppDataSource.getRepository(tableName);
+    const tableRepository = AppDataSource.getRepository(Table);
     await tableRepository
-      .createQueryBuilder(`${tableName}`.toLowerCase())
+      .createQueryBuilder(`${Table}`.toLowerCase())
       .delete()
       .whereInIds(idsArray)
       .execute()
@@ -386,11 +396,23 @@ export async function DeleteMultipalRecords(req: Request, res: Response) {
 
 export async function DeleteAllRecords(req: Request, res: Response) {
   const { tableName } = req.body;
+  let Table = tableName;
+  console.log("tableName.toLowerCase()============>", tableName.toLowerCase());
+
+  switch (tableName.toLowerCase()) {
+    case "attributes":
+      Table = "Attribute";
+      break;
+
+    default:
+      Table = tableName;
+      break;
+  }
 
   try {
-    const tableRepository = AppDataSource.getRepository(tableName);
+    const tableRepository = AppDataSource.getRepository(Table);
     await tableRepository
-      .createQueryBuilder(`${tableName}`.toLowerCase())
+      .createQueryBuilder(`${Table}`.toLowerCase())
       .delete()
       .execute()
       .then((deleteRes) => {
