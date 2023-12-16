@@ -7,6 +7,7 @@ import {
   ExtractFilterArrayWithKey,
   ExtractKeys,
   GetUserRecord,
+  ModifyCategoryIds,
   ObjectWithRequireKeysValue,
   ReturnFilterValue,
   extractNumbersFromString,
@@ -144,8 +145,9 @@ export const Import_attribute = async (req: any, res: Response) => {
           "is_field",
           "status",
           "position",
+          "category_name",
         ],
-        idKey: "id",
+        idKey: "name",
       };
 
       const csvData: any = await parseCSVFile(req.files, options);
@@ -168,17 +170,42 @@ export const Import_attribute = async (req: any, res: Response) => {
         relativeField,
       };
 
-      AddMultipalRecord(
-        attributeRepo,
-        attributeTable,
-        res,
-        messageData.ATTRIBUTE_ADD_SUCCESSFULL,
-        csvData,
-        Attribute,
-        keysToKeep,
-        RelationOption,
-        {}
+      const tableRepository = AppDataSource.getRepository("Attribute");
+      const AllAtributes = await tableRepository.find({
+        select: {
+          name: true,
+          id: true,
+        },
+      });
+      const modifyCategoryIds = ModifyCategoryIds({
+        existingObjects: csvData,
+        inputArray: AllAtributes,
+        defaultId: 27,
+      });
+      console.log(
+        "modifyCategoryIds==================>",
+        modifyCategoryIds,
+        "====="
       );
+      if (modifyCategoryIds == "noMatch") {
+        ErrorResponce(
+          res,
+          { error: "No any object match" },
+          messageData.UNKNOWN
+        );
+      } else {
+        AddMultipalRecord(
+          attributeRepo,
+          attributeTable,
+          res,
+          messageData.ATTRIBUTE_ADD_SUCCESSFULL,
+          modifyCategoryIds,
+          Attribute,
+          keysToKeep,
+          RelationOption,
+          {}
+        );
+      }
     }
   } catch (error) {
     console.log(error);

@@ -525,7 +525,7 @@ export function transformObjectWith_values(inputObject: any) {
 
   return outputObject;
 }
- //   @ts-ignore
+//   @ts-ignore
 export const AddAdditionalField = ({ data, additionalKey, choosenKey }) => {
   data.map((i: any, index: number) =>
     //   @ts-ignore
@@ -534,3 +534,120 @@ export const AddAdditionalField = ({ data, additionalKey, choosenKey }) => {
 
   return data;
 };
+
+interface ExistingObject {
+  isRelation?: boolean;
+  category_id: number[];
+  name?: string;
+  is_require?: boolean;
+  is_field?: string;
+  status?: string;
+  position?: string;
+  category_name: string;
+}
+
+interface InputObject {
+  id: number;
+  name: string;
+}
+
+//   @ts-ignore
+// export function ModifyCategoryIds({ existingObjects, inputArray, defaultId }) {
+//   // Create a mapping of category names to their corresponding IDs
+//   const categoryMapping: Record<string, number> = {};
+//   inputArray.forEach((category: any) => {
+//     categoryMapping[category.name] = category.id;
+//   });
+
+//   // Modify the existing objects based on the conditions
+//   const modifiedObjects = existingObjects.map((obj: any) => {
+//     const matchingObject = inputArray[obj.category_name];
+//     if (matchingObject) {
+//       obj.category_id.push(categoryMapping[obj.category_name]);
+//     }
+
+//     return obj;
+//   });
+
+//   return modifiedObjects;
+// }
+
+interface MyObject {
+  isRelation: boolean;
+  category_id: number[];
+  name: string;
+  is_require: boolean;
+  is_field: string;
+  status: string;
+  position: string;
+  category_name: string;
+}
+
+//   @ts-ignore
+export function ModifyCategoryIds({ existingObjects, inputArray, defaultId }) {
+  // Create a map for quick lookup of objects in the second array by name
+  const secondArrayMap: { [key: string]: { id: number; name: string } } =
+    inputArray.reduce((map: any, obj: any) => {
+      map[obj.name] = obj;
+      return map;
+    }, {});
+
+  // Modify category_id and filter out unmatched objects
+  const modifiedArray: MyObject[] = existingObjects
+    .map((obj: any) => {
+      const matchingObject = secondArrayMap[obj.category_name];
+      if (matchingObject) {
+        obj.category_id = [matchingObject.id];
+        obj.position = 0;
+
+        return obj;
+      } else {
+        obj.category_id = defaultId;
+        obj.position = 0;
+      }
+    })
+    .filter(Boolean) as MyObject[]; // Filter out null values
+
+  if (modifiedArray.length == 0) {
+    return "noMatch";
+  } else {
+    return modifiedArray;
+  }
+}
+
+// Example usage
+
+// Example usage:
+const existingObjects: ExistingObject[] = [
+  {
+    isRelation: false,
+    category_id: [],
+    name: "Vehicle ID",
+    is_require: true,
+    is_field: "Text",
+    status: "active",
+    position: "",
+    category_name: "null",
+  },
+  {
+    isRelation: false,
+    category_id: [],
+    name: "Vehicle Type",
+    is_require: true,
+    is_field: "Dropdown",
+    status: "active",
+    position: "",
+    category_name: "null",
+  },
+];
+
+const inputArray: InputObject[] = [
+  {
+    id: 1,
+    name: "Category1",
+  },
+  {
+    id: 2,
+    name: "Category2",
+  },
+];
