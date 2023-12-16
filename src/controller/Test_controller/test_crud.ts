@@ -3,7 +3,7 @@ import { AppDataSource } from "../../database/databaseConnection";
 import { Add_user_record, DeleteRecord, ErrorResponce, ExtractKeys, GetUserRecord, ObjectWithRequireKeysValue, ReturnFilterValue, parseCSVFile, removeQuotesFromKeys, } from "../Helper/helper_function";
 import { messageData } from "../../Constant/message";
 import { Test } from "../../model/test";
-import { AddMultipalRecord, AddRecord, ExportRecord, GetRecord, GetTestData, RelationOptionSchema, UpdateRecord } from "../Common/commonFunction";
+import { AddMultipalRecord, AddRecord, ExportRecord, GetRecord, GetTestData, GetTestData2, RelationOptionSchema, UpdateRecord } from "../Common/commonFunction";
 const TestRepo = AppDataSource.getRepository(Test)
 
 export const Get_Test = async (req: Request, res: Response) => {
@@ -36,7 +36,7 @@ export const Get_Test = async (req: Request, res: Response) => {
 
     const filterValue = ReturnFilterValue(data)
 
-    GetTestData(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, { isFilter:true, filterValue: filterValue ,filterData:data})
+    GetTestData2(TestRepo, res, Test, objectForAdd, messageData.TEST_GET_SUCCESSFULL, { isFilter:true, filterValue: filterValue ,filterData:data})
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }

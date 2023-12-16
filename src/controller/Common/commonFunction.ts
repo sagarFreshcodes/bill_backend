@@ -117,13 +117,13 @@ export async function GetTestData2<T extends ObjectLiteral>(
           `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`
       )
       .join(" OR ");
-    console.log("=======>", conditions, "++++++++");
+    console.log("=======>", searchVal, "++++++++");
 
     const conditions2 = `cast(${Model}.Test_name as varchar) IN (:...searchVal)`;
     const [list, count] = await repository
       .createQueryBuilder(`${Model}`)
-      .andWhere(searchVal && searchVal !== "" ? conditions2 : "1=1", {
-        searchVal: ["te12", "te1"],
+      .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
+        searchVal: `%${searchVal}%`,
       })
       .skip(getOffset(parseInt(pageNo || 0), limit))
       .take(limit)
@@ -161,21 +161,14 @@ export async function GetRecord<T extends ObjectLiteral>(
     const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
     const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
 
-    //  const conditions = entityMetadata.columns
-    //         .filter((column) => !excludedColumns.includes(column.propertyName))
-    //         .map((column) => {
 
-    //             return `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`
-    //         })
-    //         .join(' OR ');
+    console.log("entityMetadata=========", searchVal);
 
-    console.log("entityMetadata=========", entityMetadata);
-    
     const conditions = entityMetadata.columns
       .filter((column) => !excludedColumns.includes(column.propertyName))
       .map(
         (column) =>
-          `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`
+          `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
       )
       .join(" OR ");
 
@@ -187,7 +180,7 @@ export async function GetRecord<T extends ObjectLiteral>(
         const valuesUnderKey = keyWiseFilterData[filterKey];
         const KeyFilterCondition = valuesUnderKey
           .map((v: any) => {
-            const fd2 = `cast(${Model}.${i.fieldname} as varchar) ILIKE :${v}_values`;
+            const fd2 = `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
             return fd2;
           })
           .join(" OR ");
@@ -201,7 +194,6 @@ export async function GetRecord<T extends ObjectLiteral>(
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
         ...keyWiseFilterValues,
       })
-
       .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
         searchVal: `%${searchVal}%`,
       })
@@ -210,14 +202,9 @@ export async function GetRecord<T extends ObjectLiteral>(
       .orderBy(fieldName, order, "NULLS LAST")
       .getManyAndCount();
 
-    // const categoryRepo = AppDataSource.getRepository(Category)
-    // const category = await categoryRepo.findBy({id:1})
-    // console.log("category================>",category,);
-
     SuccessResponce(res, { data: list, totalRecords: count }, message);
     return null;
-  } catch (error) {
-    console.log("2512============>", error);
+  } catch (error) { 
     ErrorResponce(res, error, messageData.UNKNOWN);
     return null;
   }
