@@ -93,7 +93,78 @@ export async function GetTestData<T extends ObjectLiteral>(
     return null;
   }
 }
+
 export async function GetTestData2<T extends ObjectLiteral>(
+  repository: Repository<T>,
+  res: Response,
+  Model: any,
+  objectForAdd: any,
+  message: any,
+  other: any
+): Promise<T | null> {
+  try {
+    // const record = await repository.find();
+    const { limit, pageNo, orderBy, search } = objectForAdd;
+    const { isFilter, filterValue, filterData, modelName, relativeField } =
+      other;
+    const keyWiseFilterData = KeyWiseFilterData(filterData);
+    const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
+    const searchVal = search;
+    const order = orderBy.order || "DESC";
+    const fieldName =
+      `${orderBy.fieldName}`.split(".").length == 2
+        ? orderBy.fieldName
+        : `${modelName}.${orderBy.fieldName}` || "id";
+
+    const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
+    const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
+    const conditions = entityMetadata.columns
+      .filter((column) => !excludedColumns.includes(column.propertyName))
+      .map(
+        (column) =>
+          `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
+      )
+      .join(" OR ");
+
+    const FilterCondition = filterData
+      .map((i: any) => {
+        const filterKey = Object.keys(keyWiseFilterData).filter(
+          (e: string | string[]) => e.includes(i.fieldname)
+        )[0];
+        const valuesUnderKey = keyWiseFilterData[filterKey];
+        const KeyFilterCondition = valuesUnderKey
+          .map((v: any) => {
+            const fd2 = `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
+            return fd2;
+          })
+          .join(" OR ");
+        const fd = KeyFilterCondition;
+        return fd;
+      })
+      .join(" OR ");
+    const [list, count] = await repository
+      .createQueryBuilder(`${modelName}`)
+      // .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
+      .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
+        ...keyWiseFilterValues,
+      })
+      .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
+        searchVal: `%${searchVal}%`,
+      })
+      .skip(getOffset(parseInt(pageNo || 0), limit))
+      .take(limit)
+      .orderBy(fieldName, order, "NULLS LAST")
+      .getManyAndCount();
+
+    SuccessResponce(res, { data: list, totalRecords: count }, message);
+    return null;
+  } catch (error) {
+    ErrorResponce(res, error, messageData.UNKNOWN);
+    return null;
+  }
+}
+
+export async function GetTestData22<T extends ObjectLiteral>(
   repository: Repository<T>,
   res: Response,
   Model: any,
@@ -161,7 +232,6 @@ export async function GetRecord<T extends ObjectLiteral>(
     const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
     const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
 
-
     console.log("entityMetadata=========", searchVal);
 
     const conditions = entityMetadata.columns
@@ -204,7 +274,7 @@ export async function GetRecord<T extends ObjectLiteral>(
 
     SuccessResponce(res, { data: list, totalRecords: count }, message);
     return null;
-  } catch (error) { 
+  } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN);
     return null;
   }
