@@ -23,7 +23,7 @@ import {
   RelationOptionSchema,
   UpdateRecord,
 } from "../Common/commonFunction";
-import { Category } from "../../model/category";
+import { Categories } from "../../model/category";
 const attributeRepo = AppDataSource.getRepository(Attribute);
 
 export const Get_attribute = async (req: Request, res: Response) => {
@@ -74,7 +74,7 @@ export const Add_attribute = async (req: Request, res: Response) => {
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray);
     let attribute: any = new Attribute();
     attribute = { ...attribute, ...objectForAdd };
-    const relativeRepo = AppDataSource.getRepository(Category);
+    const relativeRepo = AppDataSource.getRepository(Categories);
     const relateIds: number[] | never[] = extractNumbersFromString(category_id);
     const relativeField = "categories";
     const RelationOption: RelationOptionSchema = {
@@ -101,7 +101,7 @@ export const Edit_attribute = async (req: Request, res: Response) => {
     const { id, category_id } = req.body;
     const keysToExtract = ["name", "is_field", "is_require", "status"];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
-    const relativeRepo = AppDataSource.getRepository(Category);
+    const relativeRepo = AppDataSource.getRepository(Categories);
     const relateIds: number[] | never[] = extractNumbersFromString(category_id);
     const relativeField = "categories";
     const RelationOption: RelationOptionSchema = {
@@ -159,7 +159,7 @@ export const Import_attribute = async (req: any, res: Response) => {
         "position",
         "isRelation",
       ];
-      const relativeRepo = AppDataSource.getRepository(Category);
+      const relativeRepo = AppDataSource.getRepository(Categories);
       const relativeField = "categories";
       const RelationOption: RelationOptionSchema = {
         isRelation: false,

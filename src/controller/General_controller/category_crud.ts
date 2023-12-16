@@ -12,8 +12,7 @@ import {
   parseCSVFile,
   removeQuotesFromKeys,
 } from "../Helper/helper_function";
-import { messageData } from "../../Constant/message";
-import { Category } from "../../model/category";
+import { messageData } from "../../Constant/message"; 
 import {
   AddMultipalRecord,
   AddRecord,
@@ -22,7 +21,8 @@ import {
   RelationOptionSchema,
   UpdateRecord,
 } from "../Common/commonFunction";
-const categoryRepo = AppDataSource.getRepository(Category);
+import { Categories } from "../../model/category";
+const categoryRepo = AppDataSource.getRepository(Categories);
 
 export const Get_category = async (req: Request, res: Response) => {
   const keysArray = [
@@ -40,7 +40,7 @@ export const Get_category = async (req: Request, res: Response) => {
     GetRecord(
       categoryRepo,
       res,
-      Category,
+      Categories,
       objectForAdd,
       messageData.CATEGORY_GET_SUCCESSFULL,
       {
@@ -48,7 +48,7 @@ export const Get_category = async (req: Request, res: Response) => {
         isFilter: Object.keys(ExtractFilterArray).length != 0,
         filterValue: filterValue,
         filterData: ExtractFilterArray,
-        modelName: "category",
+        modelName: "categories",
       }
     );
   } catch (error) {
@@ -60,7 +60,7 @@ export const Add_category = async (req: Request, res: Response) => {
   try {
     const keysArray = [{ category_name: "" }, { status: 1 }];
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray);
-    let user: any = new Category();
+    let user: any = new Categories();
     user = { ...user, ...objectForAdd };
     console.log(user);
 
@@ -69,7 +69,7 @@ export const Add_category = async (req: Request, res: Response) => {
       categoryRepo,
       user,
       res,
-      messageData.USER_ADD_SUCCESSFULL,
+      messageData.CATEGORY_ADD_SUCCESSFULL,
       RelationOption,
       {}
     );
@@ -90,7 +90,7 @@ export const Edit_category = async (req: Request, res: Response) => {
       id,
       objectForUpadate,
       res,
-      Category,
+      Categories,
       messageData.CATEGORY_UPDATE_SUCCESSFULL,
       RelationOption,
       {}
@@ -113,11 +113,11 @@ export const Import_category = async (req: any, res: Response) => {
 
       const options: FilterOptions = {
         keysToKeep: ["category_name", "status"],
-        idKey: "id",
+        idKey: "category_name",
       };
 
       const csvData: any = await parseCSVFile(req.files, options);
-      let categoryTebale: any = new Category();
+      let categoryTebale: any = new Categories();
       console.log(`csvData--------`, csvData);
       const keysToKeep: any = ["status", "category_name"];
       const RelationOption: RelationOptionSchema = { isRelation: false };
@@ -127,7 +127,7 @@ export const Import_category = async (req: any, res: Response) => {
         res,
         messageData.USER_ADD_SUCCESSFULL,
         csvData,
-        Category,
+        Categories,
         keysToKeep,
         RelationOption,
         {}
@@ -155,7 +155,7 @@ export const Export_category = async (req: Request, res: Response) => {
     ExportRecord(
       categoryRepo,
       res,
-      Category,
+      Categories,
       objectForAdd,
       messageData.CATEGORY_GET_SUCCESSFULL,
       keysToKeep,

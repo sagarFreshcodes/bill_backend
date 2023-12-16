@@ -1,12 +1,10 @@
-function extractNumbersFromString(inputString: string): number[] {
-    const numbersArray: number[] = inputString
-        .split(',')
-        .map((item) => parseInt(item.trim(), 10))
-        .filter((number) => !isNaN(number));
+//   @ts-ignore
+const AddAdditionalField = ({ data, additionalKey, choosenKey }) => {
+  data.map((i: any, index: number) =>
+    //   @ts-ignore
+    additionalKey.map((key) => (data[index][key] = i[choosenKey]))
+  );
 
-    return numbersArray;
-}
-
-const inputString: string = 'vsdafas';
-const result: number[] = extractNumbersFromString(inputString);
-console.log(result); // Output: [1, 2, 3, 4]
+  return data;
+};
+// AddAdditionalField()

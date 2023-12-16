@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
   entities: ["src/model/*{.ts,.js}"],
 });
 
-export const ConnectDatabase = (url: string) => { 
+export const ConnectDatabase = (url: string) => {
   AppDataSource.initialize()
     .then(() => {
       console.log("postgresdb connect");
