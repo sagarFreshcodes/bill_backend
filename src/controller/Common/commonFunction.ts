@@ -147,7 +147,8 @@ export async function GetRecord<T extends ObjectLiteral>(
   try {
     // const record = await repository.find();
     const { limit, pageNo, orderBy, search } = objectForAdd;
-    const { isFilter, filterValue, filterData, modelName } = other;
+    const { isFilter, filterValue, filterData, modelName, relativeField } =
+      other;
     const keyWiseFilterData = KeyWiseFilterData(filterData);
     const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
     const searchVal = search;
@@ -160,6 +161,16 @@ export async function GetRecord<T extends ObjectLiteral>(
     const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
     const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
 
+    //  const conditions = entityMetadata.columns
+    //         .filter((column) => !excludedColumns.includes(column.propertyName))
+    //         .map((column) => {
+
+    //             return `cast(${Model}.${column.propertyName} as varchar) ILIKE :searchVal`
+    //         })
+    //         .join(' OR ');
+
+    console.log("entityMetadata=========", entityMetadata);
+    
     const conditions = entityMetadata.columns
       .filter((column) => !excludedColumns.includes(column.propertyName))
       .map(
@@ -186,10 +197,11 @@ export async function GetRecord<T extends ObjectLiteral>(
       .join(" OR ");
     const [list, count] = await repository
       .createQueryBuilder(`${modelName}`)
-      .leftJoinAndSelect(`${modelName}.categories`, "category")
+      .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
         ...keyWiseFilterValues,
       })
+
       .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
         searchVal: `%${searchVal}%`,
       })

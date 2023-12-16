@@ -22,7 +22,8 @@ export const Get_attribute = async (req: Request, res: Response) => {
   try {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body)
     const filterValue = ReturnFilterValue(ExtractFilterArray)
-    GetRecord(attributeRepo, res, Attribute, objectForAdd, messageData.ATTRIBUTE_ADD_SUCCESSFULL, { isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray, modelName: "Attribute" },)
+    const relativeField = "categories"
+    GetRecord(attributeRepo, res, Attribute, objectForAdd, messageData.ATTRIBUTE_ADD_SUCCESSFULL, {relativeField:relativeField, isFilter: Object.keys(ExtractFilterArray).length != 0, filterValue: filterValue, filterData: ExtractFilterArray, modelName: "Attribute" },)
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN)
   }
