@@ -9,8 +9,11 @@ import {
   Int32,
   IntegerType, 
   JoinTable,
+  OneToMany,
+  JoinColumn,
 } from "typeorm";
 import { Attribute } from "./attribute";
+import { InventoryAttributes } from "./inventoryAttributes";
 
 @Entity()
 @EventSubscriber()
@@ -50,6 +53,13 @@ export class Inventories {
   status: string;
   @Column()
   inventories: string;
+  @OneToMany(
+    () => InventoryAttributes,
+    (inventory_attribute) => inventory_attribute.inventory,
+    { cascade: true, onDelete: "CASCADE", eager: true }
+  )
+  @JoinColumn({ name: "inventory_attribute_id" })
+  "inventory_attributes": InventoryAttributes[];
 
   // @MstringToMstring(() => Attribute)
   // // @JoinTable()

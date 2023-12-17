@@ -12,7 +12,7 @@ import {
   parseCSVFile,
   removeQuotesFromKeys,
 } from "../Helper/helper_function";
-import { messageData } from "../../Constant/message"; 
+import { messageData } from "../../Constant/message";
 import {
   AddMultipalRecord,
   AddRecord,
@@ -49,7 +49,7 @@ export const Get_category = async (req: Request, res: Response) => {
         filterValue: filterValue,
         filterData: ExtractFilterArray,
         modelName: "categories",
-        addConditionsForSearch:"null"
+        addConditionsForSearch: "null",
       }
     );
   } catch (error) {

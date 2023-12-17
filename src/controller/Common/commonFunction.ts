@@ -23,6 +23,7 @@ import {
   transformObjectWith_values,
 } from "../Helper/helper_function";
 import { log } from "console";
+import { InventoryAttributes } from "../../model/inventoryAttributes";
 
 export async function GetTestData<T extends ObjectLiteral>(
   repository: Repository<T>,
@@ -142,7 +143,7 @@ export async function GetTestData2<T extends ObjectLiteral>(
         return fd;
       })
       .join(" OR ");
-    const [list, count] = await repository
+    let CommonQurrybuild: any = await repository
       .createQueryBuilder(`${modelName}`)
       // .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
@@ -156,6 +157,9 @@ export async function GetTestData2<T extends ObjectLiteral>(
       .orderBy(fieldName, order, "NULLS LAST")
       .getManyAndCount();
 
+ 
+
+    const [list, count] = CommonQurrybuild;
     SuccessResponce(res, { data: list, totalRecords: count }, message);
     return null;
   } catch (error) {
@@ -195,8 +199,6 @@ export async function GetRecord<T extends ObjectLiteral>(
     const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
     const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
 
-    console.log("entityMetadata=========", searchVal);
-
     let conditions = entityMetadata.columns
       .filter((column) => !excludedColumns.includes(column.propertyName))
       .map(
@@ -225,12 +227,9 @@ export async function GetRecord<T extends ObjectLiteral>(
         return fd;
       })
       .join(" OR ");
-    const [list, count] = await repository
+    let [list, count] = await repository
       .createQueryBuilder(`${modelName}`)
-      .leftJoinAndSelect(
-        relativeField != "null" ? `${modelName}.${relativeField}` : "",
-        relativeField
-      )
+      .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
         ...keyWiseFilterValues,
       })
@@ -242,6 +241,7 @@ export async function GetRecord<T extends ObjectLiteral>(
       .orderBy(fieldName, order, "NULLS LAST")
       .getManyAndCount();
 
+    // const{ list, count} = CommonQurrybuild;
     SuccessResponce(res, { data: list, totalRecords: count }, message);
     return null;
   } catch (error) {
@@ -505,4 +505,37 @@ export async function GetFieldRecords(req: Request, res: Response) {
   console.log("Records", responseData);
 
   SuccessResponce(res, { data: responseData }, `message`);
+}
+
+export async function AddInventoryRecord<T extends ObjectLiteral>(
+  repository: Repository<T>,
+  tableObject: any,
+  res: Response,
+  message: any,
+  relationOption: RelationOptionSchema,
+  EssentialData: any,
+  other: object
+): Promise<T | null> {
+  try {
+    const { AttributesList } = EssentialData;
+    const { isRelation, relativeRepo, relateIds, relativeField } =
+      relationOption;
+    // if (isRelation) {
+      let inventoryAttributes: any = new InventoryAttributes();
+      inventoryAttributes.inventory_id = 2;
+      inventoryAttributes.attribute_id = 248;
+      inventoryAttributes.attribute_value = "value1";
+      const relativeRepoInserted = await relativeRepo.save(inventoryAttributes);
+      console.log("relativeRepoInserted======>", relativeRepoInserted);
+    // }
+
+    // console.log("tableObject", tableObject);
+
+    // const userInserted = await repository.save(tableObject);
+    SuccessResponce(res, { data: { data: relativeRepoInserted } }, message);
+    return null; // Return the saved entity
+  } catch (error) {
+    ErrorResponce(res, error, messageData.UNKNOWN);
+    return null;
+  }
 }
