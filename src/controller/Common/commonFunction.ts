@@ -175,8 +175,14 @@ export async function GetRecord<T extends ObjectLiteral>(
   try {
     // const record = await repository.find();
     const { limit, pageNo, orderBy, search } = objectForAdd;
-    const { isFilter, filterValue, filterData, modelName, relativeField } =
-      other;
+    const {
+      isFilter,
+      filterValue,
+      filterData,
+      modelName,
+      relativeField,
+      addConditionsForSearch,
+    } = other;
     const keyWiseFilterData = KeyWiseFilterData(filterData);
     const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
     const searchVal = search;
@@ -199,7 +205,10 @@ export async function GetRecord<T extends ObjectLiteral>(
       )
       .join(" OR ");
 
-    conditions = conditions + ` OR cast(categories.category_name as varchar) ILIKE :searchVal`
+    conditions =
+      addConditionsForSearch == "null"
+        ? conditions
+        : conditions + addConditionsForSearch;
     const FilterCondition = filterData
       .map((i: any) => {
         const filterKey = Object.keys(keyWiseFilterData).filter(
@@ -218,7 +227,10 @@ export async function GetRecord<T extends ObjectLiteral>(
       .join(" OR ");
     const [list, count] = await repository
       .createQueryBuilder(`${modelName}`)
-      .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
+      .leftJoinAndSelect(
+        relativeField != "null" ? `${modelName}.${relativeField}` : "",
+        relativeField
+      )
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
         ...keyWiseFilterValues,
       })

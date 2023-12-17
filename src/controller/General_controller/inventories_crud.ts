@@ -12,7 +12,7 @@ import {
   parseCSVFile,
   removeQuotesFromKeys,
 } from "../Helper/helper_function";
-import { messageData } from "../../Constant/message"; 
+import { messageData } from "../../Constant/message";
 import {
   AddMultipalRecord,
   AddRecord,
@@ -21,10 +21,10 @@ import {
   RelationOptionSchema,
   UpdateRecord,
 } from "../Common/commonFunction";
-import { Categories } from "../../model/category";
-const categoryRepo = AppDataSource.getRepository(Categories);
+import { Inventories } from "../../model/inventory";
+const InventoriesRepo = AppDataSource.getRepository(Inventories);
 
-export const Get_category = async (req: Request, res: Response) => {
+export const Get_Inventories = async (req: Request, res: Response) => {
   const keysArray = [
     { limit: 10 },
     { pageNo: 1 },
@@ -38,18 +38,18 @@ export const Get_category = async (req: Request, res: Response) => {
     const filterValue = ReturnFilterValue(ExtractFilterArray);
     const relativeField = "attributes";
     GetRecord(
-      categoryRepo,
+      InventoriesRepo,
       res,
-      Categories,
+      Inventories,
       objectForAdd,
-      messageData.CATEGORY_GET_SUCCESSFULL,
+      messageData.INVENTORY_GET_SUCCESSFULL,
       {
-        relativeField: relativeField,
+        relativeField: "null",
         isFilter: Object.keys(ExtractFilterArray).length != 0,
         filterValue: filterValue,
         filterData: ExtractFilterArray,
         modelName: "categories",
-        addConditionsForSearch:"null"
+        addConditionsForSearch: "null",
       }
     );
   } catch (error) {
@@ -57,20 +57,36 @@ export const Get_category = async (req: Request, res: Response) => {
   }
 };
 
-export const Add_category = async (req: Request, res: Response) => {
+export const Add_Inventories = async (req: Request, res: Response) => {
   try {
-    const keysArray = [{ category_name: "" }, { status: 1 }];
+    const keysArray = [
+      { sql_no: "" },
+      { product_name: "" },
+      { product_price: "" },
+      { inhouse_date: "" },
+      { stock_in: "" },
+      { stock_out: "" },
+      { purchase_date: "" },
+      { in_out_status: "" },
+      { remarks: "" },
+      { brand: "" },
+      { model_no: "" },
+      { generation: "" },
+      { processor: "" },
+      { status: "" },
+      { inventories: "" },
+    ];
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray);
-    let user: any = new Categories();
-    user = { ...user, ...objectForAdd };
-    console.log(user);
+    let inventories: any = new Inventories();
+    inventories = { ...inventories, ...objectForAdd };
+    console.log(inventories);
 
     const RelationOption: RelationOptionSchema = { isRelation: false };
     AddRecord(
-      categoryRepo,
-      user,
+      InventoriesRepo,
+      inventories,
       res,
-      messageData.CATEGORY_ADD_SUCCESSFULL,
+      messageData.INVENTORY_ADD_SUCCESSFULL,
       RelationOption,
       {}
     );
@@ -79,20 +95,20 @@ export const Add_category = async (req: Request, res: Response) => {
   }
 };
 
-export const Edit_category = async (req: Request, res: Response) => {
+export const Edit_Inventories = async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
-    const keysToExtract = ["category_name", "status"];
+    const keysToExtract = ["Inventories_name", "status"];
     const objectForUpadate = ExtractKeys(req.body, keysToExtract);
 
     const RelationOption: RelationOptionSchema = { isRelation: false };
     UpdateRecord(
-      categoryRepo,
+      InventoriesRepo,
       id,
       objectForUpadate,
       res,
-      Categories,
-      messageData.CATEGORY_UPDATE_SUCCESSFULL,
+      Inventories,
+      messageData.INVENTORY_UPDATE_SUCCESSFULL,
       RelationOption,
       {}
     );
@@ -101,7 +117,7 @@ export const Edit_category = async (req: Request, res: Response) => {
   }
 };
 
-export const Import_category = async (req: any, res: Response) => {
+export const Import_Inventories = async (req: any, res: Response) => {
   try {
     if (!req.files) {
       console.log("csvData", typeof req.files);
@@ -113,22 +129,22 @@ export const Import_category = async (req: any, res: Response) => {
       }
 
       const options: FilterOptions = {
-        keysToKeep: ["category_name", "status"],
-        idKey: "category_name",
+        keysToKeep: ["Inventories_name", "status"],
+        idKey: "Inventories_name",
       };
 
       const csvData: any = await parseCSVFile(req.files, options);
-      let categoryTebale: any = new Categories();
+      let InventoriesTebale: any = new Inventories();
       console.log(`csvData--------`, csvData);
-      const keysToKeep: any = ["status", "category_name"];
+      const keysToKeep: any = ["status", "Inventories_name"];
       const RelationOption: RelationOptionSchema = { isRelation: false };
       AddMultipalRecord(
-        categoryRepo,
-        categoryTebale,
+        InventoriesRepo,
+        InventoriesTebale,
         res,
         messageData.USER_ADD_SUCCESSFULL,
         csvData,
-        Categories,
+        Inventories,
         keysToKeep,
         RelationOption,
         {}
@@ -141,7 +157,7 @@ export const Import_category = async (req: any, res: Response) => {
   }
 };
 
-export const Export_category = async (req: Request, res: Response) => {
+export const Export_Inventories = async (req: Request, res: Response) => {
   const keysArray = [
     { limit: 10 },
     { pageNo: 1 },
@@ -151,14 +167,14 @@ export const Export_category = async (req: Request, res: Response) => {
   ];
 
   const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray);
-  const keysToKeep = ["status", "category_name"];
+  const keysToKeep = ["status", "Inventories_name"];
   try {
     ExportRecord(
-      categoryRepo,
+      InventoriesRepo,
       res,
-      Categories,
+      Inventories,
       objectForAdd,
-      messageData.CATEGORY_GET_SUCCESSFULL,
+      messageData.INVENTORY_GET_SUCCESSFULL,
       keysToKeep,
       {}
     );

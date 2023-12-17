@@ -42,6 +42,7 @@ export const Get_attribute = async (req: Request, res: Response) => {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body);
     const filterValue = ReturnFilterValue(ExtractFilterArray);
     const relativeField = "categories";
+    const addConditionsForSearch = ` OR cast(categories.category_name as varchar) ILIKE :searchVal`;
     GetRecord(
       attributeRepo,
       res,
@@ -54,6 +55,7 @@ export const Get_attribute = async (req: Request, res: Response) => {
         filterValue: filterValue,
         filterData: ExtractFilterArray,
         modelName: "Attribute",
+        addConditionsForSearch: addConditionsForSearch,
       }
     );
   } catch (error) {
