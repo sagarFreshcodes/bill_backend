@@ -50,7 +50,7 @@ export class Attribute {
   //     }
   //   })
   // "categories": Category[];
-
+  // @ManyToMany(() => Categories, (categories) => categories.attributes)
   @ManyToMany(() => Categories)
   @JoinTable({
     name: "attributes_categories",

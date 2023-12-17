@@ -28,7 +28,8 @@ export class Categories {
   //     }
   //   })
   // "attributes": Attribute[];
-
+  
+  // @ManyToMany(() => Attribute, (attribute) => attribute.categories)
   @ManyToMany(() => Attribute)
   // @JoinTable()
   @JoinTable({

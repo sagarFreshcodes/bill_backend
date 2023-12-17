@@ -191,14 +191,15 @@ export async function GetRecord<T extends ObjectLiteral>(
 
     console.log("entityMetadata=========", searchVal);
 
-    const conditions = entityMetadata.columns
+    let conditions = entityMetadata.columns
       .filter((column) => !excludedColumns.includes(column.propertyName))
       .map(
         (column) =>
-          `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
+          `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal OR cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
       )
       .join(" OR ");
 
+    conditions = conditions + ` OR cast(categories.category_name as varchar) ILIKE :searchVal`
     const FilterCondition = filterData
       .map((i: any) => {
         const filterKey = Object.keys(keyWiseFilterData).filter(
@@ -361,15 +362,15 @@ export async function UpdateRecord<T extends ObjectLiteral>(
 export async function DeleteMultipalRecords(req: Request, res: Response) {
   const { ids, tableName } = req.body;
   let Table = tableName;
-   switch (tableName.toLowerCase()) {
-     case "attributes":
-       Table = "Attribute";
-       break;
+  switch (tableName.toLowerCase()) {
+    case "attributes":
+      Table = "Attribute";
+      break;
 
-     default:
-       Table = tableName;
-       break;
-   }
+    default:
+      Table = tableName;
+      break;
+  }
   const idsArray = commaSeparatedStringToArray(ids);
 
   try {
