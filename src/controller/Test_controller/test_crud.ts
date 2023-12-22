@@ -41,7 +41,7 @@ export const Get_Test = async (req: Request, res: Response) => {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body);
     const filterValue = ReturnFilterValue(ExtractFilterArray);
     const relativeField = "no";
-    GetTestData2(
+    GetTestData(
       TestRepo,
       res,
       Test,
@@ -49,7 +49,7 @@ export const Get_Test = async (req: Request, res: Response) => {
       messageData.TEST_GET_SUCCESSFULL,
       {
         relativeField: relativeField,
-        isFilter:  Object.keys(ExtractFilterArray).length != 0,
+        isFilter: Object.keys(ExtractFilterArray).length != 0,
         filterValue: filterValue,
         filterData: ExtractFilterArray,
         modelName: "Test",

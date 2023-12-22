@@ -32,6 +32,7 @@ export class InventoryAttributes extends BaseEntity {
     eager: true,
   })
   
+  
   @JoinColumn({ name: "attribute_id" })
   "attribute_id": Attribute;
 
