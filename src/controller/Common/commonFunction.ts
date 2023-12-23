@@ -230,7 +230,7 @@ export async function GetRecord<T extends ObjectLiteral>(
     const keyWiseFilterData = KeyWiseFilterData(filterData);
     const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
     const searchVal = search;
-    const order = orderBy.order || "DESC";
+    const order = orderBy.order.toUpperCase() || "DESC";
     const fieldName =
       `${orderBy.fieldName}`.split(".").length == 2
         ? orderBy.fieldName
@@ -267,24 +267,39 @@ export async function GetRecord<T extends ObjectLiteral>(
         return fd;
       })
       .join(" OR ");
-    let [list, count] = await repository
-      .createQueryBuilder(`${modelName}`)
-      .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
-      .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
-        ...keyWiseFilterValues,
-      })
-      .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
-        searchVal: `%${searchVal}%`,
-      })
-      .skip(getOffset(parseInt(pageNo || 0), limit))
-      .take(limit)
-      .orderBy(fieldName, order, "NULLS LAST")
-      .getManyAndCount();
+    let [list, count] =
+      relativeField != "null"
+        ? await repository
+            .createQueryBuilder(`${modelName}`)
+            .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
+            .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
+              ...keyWiseFilterValues,
+            })
+            .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
+              searchVal: `%${searchVal}%`,
+            })
+            .skip(getOffset(parseInt(pageNo || 0), limit))
+            .take(limit)
+            .orderBy(fieldName, order, "NULLS LAST")
+            .getManyAndCount()
+        : await repository
+            .createQueryBuilder(`${modelName}`)
+            .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
+              ...keyWiseFilterValues,
+            })
+            .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
+              searchVal: `%${searchVal}%`,
+            })
+            .skip(getOffset(parseInt(pageNo || 0), limit))
+            .take(limit)
+            .orderBy(fieldName, order, "NULLS LAST")
+            .getManyAndCount();
 
     // const{ list, count} = CommonQurrybuild;
     SuccessResponce(res, { data: list, totalRecords: count }, message);
     return null;
   } catch (error) {
+    console.log(error);
     ErrorResponce(res, error, messageData.UNKNOWN);
     return null;
   }

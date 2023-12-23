@@ -11,6 +11,7 @@ import cors from "cors";
 import { Test_routes } from "./routes/General_routes/test_routes";
 import { Attribute_routes } from "./routes/General_routes/attributes_routes";
 import { Inventories_routes } from "./routes/General_routes/inventories_routes";
+import { Customer_routes } from "./routes/General_routes/category_routes copy";
 const app = express();
 app.use(cors());
 const port = 5500;
@@ -59,7 +60,8 @@ app.use(
   Category_routes,
   User_routes,
   Attribute_routes,
-  Inventories_routes
+  Inventories_routes,
+  Customer_routes
 );
 app.listen(port, () => {
   console.log(`server running on http://localhost:${port}`);
