@@ -230,7 +230,9 @@ export async function GetRecord<T extends ObjectLiteral>(
     const keyWiseFilterData = KeyWiseFilterData(filterData);
     const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
     const searchVal = search;
-    const order = orderBy.order.toUpperCase() || "DESC";
+    const order = orderBy.order
+      ? orderBy.order.toUpperCase() || "DESC"
+      : "DESC";
     const fieldName =
       `${orderBy.fieldName}`.split(".").length == 2
         ? orderBy.fieldName

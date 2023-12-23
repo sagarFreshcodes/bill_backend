@@ -39,9 +39,15 @@ export const messageData = {
   ATTRIBUTE_UPDATE_SUCCESSFULL: "attribute Update successfully",
   ATTRIBUTE_DELETE_SUCCESSFULL: "attribute Delete successfully",
 
-  //category
+  //customer
   CUSTOMER_GET_SUCCESSFULL: "Get all record successfully",
   CUSTOMER_ADD_SUCCESSFULL: "Customer Added Successfully",
   CUSTOMER_UPDATE_SUCCESSFULL: "Customer Update successfully",
   CUSTOMER_DELETE_SUCCESSFULL: "Customer Delete successfully",
+
+  //hsn
+  HSN_GET_SUCCESSFULL: "Get all record successfully",
+  HSN_ADD_SUCCESSFULL: "HSN Added Successfully",
+  HSN_UPDATE_SUCCESSFULL: "HSN Update successfully",
+  HSN_DELETE_SUCCESSFULL: "HSN Delete successfully",
 };
