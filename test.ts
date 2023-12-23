@@ -1,10 +1,2 @@
-//   @ts-ignore
-const AddAdditionalField = ({ data, additionalKey, choosenKey }) => {
-  data.map((i: any, index: number) =>
-    //   @ts-ignore
-    additionalKey.map((key) => (data[index][key] = i[choosenKey]))
-  );
-
-  return data;
-};
-// AddAdditionalField()
+// console.log(JSON.stringify({250:"valu250",251:"valu250",252:"valu250"}))
+console.log(JSON.parse('{"250":"valu250","251":"valu250","252":"valu250"}'));

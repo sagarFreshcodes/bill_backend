@@ -7,13 +7,15 @@ import {
   BeforeInsert,
   EventSubscriber,
   Int32,
-  IntegerType, 
+  IntegerType,
   JoinTable,
   OneToMany,
   JoinColumn,
+  ManyToOne,
 } from "typeorm";
 import { Attribute } from "./attribute";
 import { InventoryAttributes } from "./inventoryAttributes";
+import { Categories } from "./category";
 
 @Entity()
 @EventSubscriber()
@@ -53,6 +55,7 @@ export class Inventories {
   status: string;
   @Column()
   inventories: string;
+
   @OneToMany(
     () => InventoryAttributes,
     (inventory_attribute) => inventory_attribute.inventory,
@@ -75,6 +78,41 @@ export class Inventories {
   //   },
   // })
   // "attributes": Attribute[];
+
+  // @ManyToOne(() => Companies, {
+  //   eager: true,
+  //   cascade: true,
+  //   onDelete: "CASCADE",
+  // })
+  // @JoinColumn({ name: "company_id" })
+  // "company_id": Companies;
+
+  // @ManyToOne(() => Customer, {
+  //   cascade: true,
+  //   onDelete: "CASCADE",
+  //   eager: true,
+  // })
+  // @JoinColumn({ name: "vendor_id" })
+  // "vendor_id": Customer;
+
+  // @OneToOne(() => Hsn, { cascade: true, onDelete: "CASCADE", eager: true })
+  // @JoinColumn({ name: "hsn_id" })
+  // "hsn": Hsn;
+  @Column()
+  company_id: string;
+
+  @Column()
+  vendor_id: string;
+  @Column()
+  hsn: string;
+
+  @ManyToOne(() => Categories, {
+    cascade: true,
+    onDelete: "CASCADE",
+    eager: true,
+  })
+  @JoinColumn({ name: "category_id" })
+  "category_id": Categories;
 
   @CreateDateColumn({ nullable: true, default: () => "CURRENT_TIMESTAMP" })
   "createdDate": Date;

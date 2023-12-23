@@ -139,11 +139,11 @@ export async function GetTestData2<T extends ObjectLiteral>(
         const valuesUnderKey = keyWiseFilterData[filterKey];
         const KeyFilterCondition = valuesUnderKey
           .map((v: any) => {
-             const fd2 =
-             `${i.fieldname}`.split(".").length >= 2
-               ? `cast(${i.fieldname} as varchar) ILIKE :${v}_values`
-               : `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
-            
+            const fd2 =
+              `${i.fieldname}`.split(".").length >= 2
+                ? `cast(${i.fieldname} as varchar) ILIKE :${v}_values`
+                : `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
+
             return fd2;
           })
           .join(" OR ");
@@ -557,22 +557,41 @@ export async function AddInventoryRecord<T extends ObjectLiteral>(
   other: object
 ): Promise<T | null> {
   try {
-    const { AttributesList } = EssentialData;
+    const { AttributesList, InventoryAttributesList } = EssentialData;
     const { isRelation, relativeRepo, relateIds, relativeField } =
       relationOption;
     // if (isRelation) {
-    let inventoryAttributes: any = new InventoryAttributes();
-    inventoryAttributes.inventory_id = 2;
-    inventoryAttributes.attribute_id = 248;
-    inventoryAttributes.attribute_value = "value1";
-    const relativeRepoInserted = await relativeRepo.save(inventoryAttributes);
-    console.log("relativeRepoInserted======>", relativeRepoInserted);
+
+    // let inventoryAttributes: any = new InventoryAttributes();
+    // inventoryAttributes.inventory_id = 2;
+    // inventoryAttributes.attribute_id = 248;
+    // inventoryAttributes.attribute_value = "value1";
+    // const relativeRepoInserted = await relativeRepo.save(inventoryAttributes);
+    // console.log("relativeRepoInserted======>", relativeRepoInserted);
     // }
 
     // console.log("tableObject", tableObject);
 
-    // const userInserted = await repository.save(tableObject);
-    SuccessResponce(res, { data: { data: relativeRepoInserted } }, message);
+    // skip............................................................... //
+
+    const validArray: any = [];
+
+    const userInserted = await repository.save(tableObject);
+    // skip............................................................... //
+
+    if (InventoryAttributesList.length >= 1) {
+      for (const i of InventoryAttributesList) {
+        let inventoryAttributes: any = new InventoryAttributes();
+        inventoryAttributes.inventory = userInserted.id || 13;
+        inventoryAttributes.attribute_id = +Object.keys(i)[0];
+        inventoryAttributes.attribute_value = Object.values(i)[0];
+        validArray.push(inventoryAttributes);
+        // }
+      }
+
+      await relativeRepo.save(validArray);
+    }
+    SuccessResponce(res, { data: { data: userInserted } }, message);
     return null; // Return the saved entity
   } catch (error) {
     ErrorResponce(res, error, messageData.UNKNOWN);

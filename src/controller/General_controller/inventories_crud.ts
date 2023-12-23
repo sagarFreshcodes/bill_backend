@@ -39,7 +39,7 @@ export const Get_Inventories = async (req: Request, res: Response) => {
   try {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body);
     const filterValue = ReturnFilterValue(ExtractFilterArray);
-    
+
     const relativeField = "inventory_attributes";
     GetTestData2(
       InventoriesRepo,
@@ -64,26 +64,31 @@ export const Get_Inventories = async (req: Request, res: Response) => {
 export const Add_Inventories = async (req: Request, res: Response) => {
   try {
     const keysArray = [
-      { sql_no: "" },
-      { product_name: "" },
-      { product_price: "" },
-      { inhouse_date: "" },
-      { stock_in: "" },
-      { stock_out: "" },
-      { purchase_date: "" },
-      { in_out_status: "" },
-      { remarks: "" },
-      { brand: "" },
-      { model_no: "" },
-      { generation: "" },
-      { processor: "" },
-      { status: "" },
-      { inventories: "" },
+      { sql_no: "a" },
+      { product_name: "a" },
+      { product_price: "a" },
+      { inhouse_date: "a" },
+      { stock_in: "a" },
+      { stock_out: "a" },
+      { purchase_date: "a" },
+      { in_out_status: "a" },
+      { remarks: "a" },
+      { brand: "a" },
+      { model_no: "a" },
+      { generation: "a" },
+      { processor: "a" },
+      { status: "a" },
+      { company_id: "a" },
+      { vendor_id: "a" },
+      { hsn: "a" },
+      { company_id: 100 },
+      { inventories: "100" },
     ];
+    const { custom_attribute, vendor_id, category_id } = req.body;
     const objectForAdd = ObjectWithRequireKeysValue(req.body, keysArray);
     let inventories: any = new Inventories();
     inventories = { ...inventories, ...objectForAdd };
-    console.log("inventories=========", inventories);
+    console.log("inventories2=========", JSON.parse(custom_attribute));
     const relativeRepo = AppDataSource.getRepository(InventoryAttributes);
     const RelationOption: RelationOptionSchema = {
       isRelation: true,
@@ -96,7 +101,10 @@ export const Add_Inventories = async (req: Request, res: Response) => {
       res,
       messageData.INVENTORY_ADD_SUCCESSFULL,
       RelationOption,
-      { AttributesList: AttributesList },
+      {
+        AttributesList: AttributesList,
+        InventoryAttributesList: JSON.parse(custom_attribute),
+      },
       {}
     );
   } catch (error) {
