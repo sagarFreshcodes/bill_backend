@@ -39,6 +39,7 @@ export const Get_Inventories = async (req: Request, res: Response) => {
   try {
     const ExtractFilterArray = ExtractFilterArrayWithKey(req.body);
     const filterValue = ReturnFilterValue(ExtractFilterArray);
+    
     const relativeField = "inventory_attributes";
     GetTestData2(
       InventoriesRepo,

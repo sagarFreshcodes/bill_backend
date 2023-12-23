@@ -109,6 +109,7 @@ export async function GetTestData2<T extends ObjectLiteral>(
     const { limit, pageNo, orderBy, search } = objectForAdd;
     const { isFilter, filterValue, filterData, modelName, relativeField } =
       other;
+    console.log("filterData====>", filterData);
     const keyWiseFilterData = KeyWiseFilterData(filterData);
     const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
     const searchVal = search;
@@ -120,13 +121,15 @@ export async function GetTestData2<T extends ObjectLiteral>(
 
     const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
     const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
-    const conditions = entityMetadata.columns
-      .filter((column) => !excludedColumns.includes(column.propertyName))
-      .map(
-        (column) =>
-          `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
-      )
-      .join(" OR ");
+    const addConditionsForSearch = ` OR cast(inventory_attributes.attribute_value as varchar) ILIKE :searchVal OR cast(attribute.name as varchar) ILIKE :searchVal`;
+    const conditions =
+      entityMetadata.columns
+        .filter((column) => !excludedColumns.includes(column.propertyName))
+        .map(
+          (column) =>
+            `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
+        )
+        .join(" OR ") + addConditionsForSearch;
 
     const FilterCondition = filterData
       .map((i: any) => {
@@ -136,7 +139,11 @@ export async function GetTestData2<T extends ObjectLiteral>(
         const valuesUnderKey = keyWiseFilterData[filterKey];
         const KeyFilterCondition = valuesUnderKey
           .map((v: any) => {
-            const fd2 = `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
+             const fd2 =
+             `${i.fieldname}`.split(".").length >= 2
+               ? `cast(${i.fieldname} as varchar) ILIKE :${v}_values`
+               : `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
+            
             return fd2;
           })
           .join(" OR ");
@@ -145,21 +152,52 @@ export async function GetTestData2<T extends ObjectLiteral>(
       })
       .join(" OR ");
     let CommonQurrybuild: any = await repository
-      .createQueryBuilder(`${modelName}`)
-      .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
-      .leftJoinAndSelect(`${modelName}.attribute_id`, "attribute_ids")
+      .createQueryBuilder(`Inventories`)
+      .leftJoinAndSelect(
+        `Inventories.inventory_attributes`,
+        `inventory_attributes`
+      )
+      .leftJoinAndSelect("inventory_attributes.attribute_id", "attribute")
+      // .leftJoinAndSelect("inventories.category_id", "category")
+      // .leftJoinAndSelect(`${modelName}.attribute_id`, "attribute_ids")
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
         ...keyWiseFilterValues,
       })
       .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
         searchVal: `%${searchVal}%`,
       })
+      .orderBy(fieldName, order, "NULLS LAST")
       .skip(getOffset(parseInt(pageNo || 0), limit))
       .take(limit)
-      .orderBy(fieldName, order, "NULLS LAST")
-      .getManyAndCount();
+      .select([
+        "Inventories",
+        "inventory_attributes.attribute_id",
+        `inventory_attributes.attribute_value`,
+        `inventory_attributes.id`,
+        "attribute.name",
+        "attribute.id",
+        // "attribute.categories",
+      ]);
+    // .select([
+    // "inventories",
+    // "category.category_name",
+    // "category.id",
+    // "company_id.company_name",
+    // "company_id.id",
+    // `inventory_attributes.attribute_value`,
+    // `inventory_attributes.id`,
+    // "attribute.name",
+    // "attribute.id",
+    // "hsn.id",
+    // "hsn.hsn_code",
+    // "vendor.id",
+    // "vendor.first_name",
+    // ]);
+    // .getManyAndCount();
 
-    const [list, count] = CommonQurrybuild;
+    const list = await CommonQurrybuild.getMany();
+    const count = await CommonQurrybuild.getCount();
+    // const [list, count] = CommonQurrybuild;
     SuccessResponce(res, { data: list, totalRecords: count }, message);
     return null;
   } catch (error) {
@@ -188,6 +226,7 @@ export async function GetRecord<T extends ObjectLiteral>(
       relativeField,
       addConditionsForSearch,
     } = other;
+
     const keyWiseFilterData = KeyWiseFilterData(filterData);
     const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
     const searchVal = search;

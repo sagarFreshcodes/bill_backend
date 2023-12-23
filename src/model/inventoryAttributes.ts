@@ -20,7 +20,7 @@ export class InventoryAttributes extends BaseEntity {
   //     onDelete: "CASCADE",
   //   })
 
-  @ManyToOne(() => Inventories, {
+  @ManyToOne(() => Inventories, (inventory) => inventory.inventory_attributes, {
     onDelete: "CASCADE",
   })
   @JoinColumn({ name: "inventory_id" })
@@ -31,10 +31,22 @@ export class InventoryAttributes extends BaseEntity {
     onDelete: "CASCADE",
     eager: true,
   })
-  
-  
   @JoinColumn({ name: "attribute_id" })
   "attribute_id": Attribute;
+
+  // @ManyToOne(() => Inventories, (inventory) => inventory.inventory_attributes, {
+  //   onDelete: "CASCADE",
+  // })
+  // @JoinColumn({ name: "inventory_id" })
+  // "inventory": Inventories;
+
+  // @ManyToOne(() => Attributes, {
+  //   cascade: true,
+  //   onDelete: "CASCADE",
+  //   eager: true,
+  // })
+  // @JoinColumn({ name: "attribute_id" })
+  // "attribute_id": Attributes;
 
   @Column({ nullable: true })
   "attribute_value": String;
