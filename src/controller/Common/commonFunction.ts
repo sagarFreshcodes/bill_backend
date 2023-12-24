@@ -121,7 +121,7 @@ export async function GetTestData2<T extends ObjectLiteral>(
 
     const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
     const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
-    const addConditionsForSearch = ` OR cast(inventory_attributes.attribute_value as varchar) ILIKE :searchVal OR cast(attribute.name as varchar) ILIKE :searchVal`;
+    const addConditionsForSearch = ` OR cast(inventory_attributes.attribute_value as varchar) ILIKE :searchVal OR cast(attribute.name as varchar) ILIKE :searchVal  OR cast(company_id.company_name as varchar) ILIKE :searchVal OR cast(hsn.hsn_code as varchar) ILIKE :searchVal OR cast(vendor.first_name as varchar) ILIKE :searchVal`;
     const conditions =
       entityMetadata.columns
         .filter((column) => !excludedColumns.includes(column.propertyName))
@@ -158,6 +158,9 @@ export async function GetTestData2<T extends ObjectLiteral>(
         `inventory_attributes`
       )
       .leftJoinAndSelect("inventory_attributes.attribute_id", "attribute")
+      .leftJoinAndSelect("Inventories.company_id", "company_id")
+      .leftJoinAndSelect("Inventories.vendor_id", "vendor")
+      .leftJoinAndSelect("Inventories.hsn", "hsn")
       // .leftJoinAndSelect("inventories.category_id", "category")
       // .leftJoinAndSelect(`${modelName}.attribute_id`, "attribute_ids")
       .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
@@ -177,6 +180,12 @@ export async function GetTestData2<T extends ObjectLiteral>(
         "attribute.name",
         "attribute.id",
         // "attribute.categories",
+        "company_id.company_name",
+        "company_id.id",
+        "hsn.id",
+        "hsn.hsn_code",
+        "vendor.id",
+        "vendor.first_name",
       ]);
     // .select([
     // "inventories",
