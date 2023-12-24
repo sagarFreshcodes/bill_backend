@@ -50,4 +50,10 @@ export const messageData = {
   HSN_ADD_SUCCESSFULL: "HSN Added Successfully",
   HSN_UPDATE_SUCCESSFULL: "HSN Update successfully",
   HSN_DELETE_SUCCESSFULL: "HSN Delete successfully",
+
+  //company
+  COMPANY_GET_SUCCESSFULL: "Get all record successfully",
+  COMPANY_ADD_SUCCESSFULL: "Company Added Successfully",
+  COMPANY_UPDATE_SUCCESSFULL: "Company Update successfully",
+  COMPANY_DELETE_SUCCESSFULL: "Company Delete successfully",
 };
