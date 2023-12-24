@@ -179,7 +179,6 @@ export async function GetTestData2<T extends ObjectLiteral>(
         `inventory_attributes.id`,
         "attribute.name",
         "attribute.id",
-        // "attribute.categories",
         "company_id.company_name",
         "company_id.id",
         "hsn.id",
@@ -555,20 +554,41 @@ export async function ExportRecord<T extends ObjectLiteral>(
 
 export async function GetFieldRecords(req: Request, res: Response) {
   const { tableName, fieldName } = req.body;
-  const tableRepository = AppDataSource.getRepository(tableName);
-  const Records = await tableRepository.find({
-    select: {
-      [fieldName]: true,
-      id: true,
-    },
-  });
 
+  const tableRepository = AppDataSource.getRepository(tableName);
+
+  let Records = async () => {
+    if (tableName == "Inventories" && fieldName == "first_name") {
+      const tableRepository = AppDataSource.getRepository("Customer");
+      const ReturnData = await tableRepository
+        .createQueryBuilder(`Model`)
+        .select([`Model.${fieldName}`, "Model.id"])
+        .getMany();
+
+      return ReturnData;
+    } else {
+      const ReturnData = await tableRepository
+        .createQueryBuilder(`Model`)
+        .select([`Model.${fieldName}`, "Model.id"])
+        .getMany();
+
+      return ReturnData;
+    }
+  };
+
+  // const Records = await tableRepository.find({
+  //   select: {
+  //     [fieldName]: true,
+  //     id: true,
+  //   },
+  // });
+
+  const RecordArray = await Records();
   const responseData = AddAdditionalField({
-    data: Records,
+    data: RecordArray,
     additionalKey: ["value", "text", "label"],
     choosenKey: fieldName,
   });
-  console.log("Records", responseData);
 
   SuccessResponce(res, { data: responseData }, `message`);
 }
@@ -620,6 +640,178 @@ export async function AddInventoryRecord<T extends ObjectLiteral>(
     SuccessResponce(res, { data: { data: userInserted } }, message);
     return null; // Return the saved entity
   } catch (error) {
+    ErrorResponce(res, error, messageData.UNKNOWN);
+    return null;
+  }
+}
+
+export async function GetInventoryRecord<T extends ObjectLiteral>(
+  repository: Repository<T>,
+  res: Response,
+  Model: any,
+  objectForAdd: any,
+  message: any,
+  other: any
+): Promise<T | null> {
+  try {
+    // const record = await repository.find();
+    const { limit, pageNo, orderBy, search } = objectForAdd;
+    const { isFilter, filterValue, filterData, modelName, relativeField } =
+      other;
+    const keyWiseFilterData = KeyWiseFilterData(filterData);
+    const keyWiseFilterValues = transformObjectWith_values(keyWiseFilterData);
+    const searchVal = search;
+    const order = orderBy.order || "DESC";
+    const fieldName =
+      `${orderBy.fieldName}`.split(".").length == 2
+        ? orderBy.fieldName
+        : `${modelName}.${orderBy.fieldName}` || "id";
+
+    const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
+    const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
+    const addConditionsForSearch = ` OR cast(inventory_attributes.attribute_value as varchar) ILIKE :searchVal OR cast(attribute.name as varchar) ILIKE :searchVal  OR cast(company_id.company_name as varchar) ILIKE :searchVal OR cast(hsn.hsn_code as varchar) ILIKE :searchVal OR cast(vendor.first_name as varchar) ILIKE :searchVal`;
+    const conditions =
+      entityMetadata.columns
+        .filter((column) => !excludedColumns.includes(column.propertyName))
+        .map(
+          (column) =>
+            `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
+        )
+        .join(" OR ") + addConditionsForSearch;
+
+    const FilterCondition = filterData
+      .map((i: any) => {
+        const filterKey = Object.keys(keyWiseFilterData).filter(
+          (e: string | string[]) => e.includes(i.fieldname)
+        )[0];
+        const valuesUnderKey = keyWiseFilterData[filterKey];
+        const KeyFilterCondition = valuesUnderKey
+          .map((v: any) => {
+            const fd2 =
+              `${i.fieldname}`.split(".").length >= 2
+                ? `cast(${i.fieldname} as varchar) ILIKE :${v}_values`
+                : `cast(${modelName}.${i.fieldname} as varchar) ILIKE :${v}_values`;
+
+            return fd2;
+          })
+          .join(" OR ");
+        const fd = KeyFilterCondition;
+        return fd;
+      })
+      .join(" OR ");
+    let CommonQurrybuild: any = await repository
+      .createQueryBuilder(`Inventories`)
+      .leftJoinAndSelect(
+        `Inventories.inventory_attributes`,
+        `inventory_attributes`
+      )
+      .leftJoinAndSelect("inventory_attributes.attribute_id", "attribute")
+      .leftJoinAndSelect("Inventories.company_id", "company_id")
+      .leftJoinAndSelect("Inventories.vendor_id", "vendor")
+      .leftJoinAndSelect("Inventories.hsn", "hsn")
+      .leftJoinAndSelect("Inventories.category_id", "category")
+      .andWhere(isFilter && isFilter ? FilterCondition : "1=1", {
+        ...keyWiseFilterValues,
+      })
+      .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
+        searchVal: `%${searchVal}%`,
+      })
+      .orderBy(fieldName, order, "NULLS LAST")
+      .skip(getOffset(parseInt(pageNo || 0), limit))
+      .take(limit)
+      .select([
+        "Inventories",
+        "inventory_attributes.attribute_id",
+        `inventory_attributes.attribute_value`,
+        `inventory_attributes.id`,
+        "attribute.name",
+        "attribute.id",
+        "company_id.company_name",
+        "company_id.id",
+        "hsn.id",
+        "hsn.hsn_code",
+        "vendor.id",
+        "vendor.first_name",
+        "category.id",
+        "category.category_name",
+      ]);
+    // .select([
+    // "inventories",
+    // "category.category_name",
+    // "category.id",
+    // "company_id.company_name",
+    // "company_id.id",
+    // `inventory_attributes.attribute_value`,
+    // `inventory_attributes.id`,
+    // "attribute.name",
+    // "attribute.id",
+    // "hsn.id",
+    // "hsn.hsn_code",
+    // "vendor.id",
+    // "vendor.first_name",
+    // ]);
+    // .getManyAndCount();
+
+    const list = await CommonQurrybuild.getMany();
+    const count = await CommonQurrybuild.getCount();
+    // const [list, count] = CommonQurrybuild;
+    SuccessResponce(res, { data: list, totalRecords: count }, message);
+    return null;
+  } catch (error) {
+    console.log(error);
+    ErrorResponce(res, error, messageData.UNKNOWN);
+    return null;
+  }
+}
+
+export async function GetAttributesValueRecord<T extends ObjectLiteral>(
+  repository: Repository<T>,
+  res: Response,
+  Model: any,
+  objectForAdd: any,
+  message: any,
+  other: any
+): Promise<T | null> {
+  try {
+    // const record = await repository.find();
+    const { search } = objectForAdd;
+    const {
+      isFilter,
+      filterValue,
+      filterData,
+      modelName,
+      relativeField,
+      addConditionsForSearch,
+    } = other;
+
+    const searchVal = search;
+
+    const entityMetadata: EntityMetadata = AppDataSource.getMetadata(Model);
+    const excludedColumns = ["id", "createdDate", "updatedDate"]; // Add column names you want to exclude
+
+    let conditions = entityMetadata.columns
+      .filter((column) => !excludedColumns.includes(column.propertyName))
+      .map(
+        (column) =>
+          `cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal OR cast(${modelName}.${column.propertyName} as varchar) ILIKE :searchVal`
+      )
+      .join(" OR ");
+
+    conditions = conditions + addConditionsForSearch;
+
+    let [list, count] = await repository
+      .createQueryBuilder(`${modelName}`)
+      .leftJoinAndSelect(`${modelName}.${relativeField}`, relativeField)
+      .andWhere(searchVal && searchVal !== "" ? conditions : "1=1", {
+        searchVal: `%${searchVal}%`,
+      })
+      .getManyAndCount();
+
+    // const{ list, count} = CommonQurrybuild;
+    SuccessResponce(res, { data: list, totalRecords: count }, message);
+    return null;
+  } catch (error) {
+    console.log(error);
     ErrorResponce(res, error, messageData.UNKNOWN);
     return null;
   }

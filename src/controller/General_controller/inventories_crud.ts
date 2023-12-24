@@ -18,6 +18,7 @@ import {
   AddMultipalRecord,
   AddRecord,
   ExportRecord,
+  GetInventoryRecord,
   GetRecord,
   GetTestData2,
   RelationOptionSchema,
@@ -41,7 +42,7 @@ export const Get_Inventories = async (req: Request, res: Response) => {
     const filterValue = ReturnFilterValue(ExtractFilterArray);
 
     const relativeField = "inventory_attributes";
-    GetTestData2(
+    GetInventoryRecord(
       InventoriesRepo,
       res,
       Inventories,

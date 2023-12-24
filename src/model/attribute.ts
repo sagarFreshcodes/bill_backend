@@ -37,20 +37,6 @@ export class Attribute {
   @Column()
   "position": Number;
 
-  // @ManyToMany(() => Category  )
-  // @JoinTable(    {
-  //     name: "attributes_categories",
-  //     joinColumn: {
-  //       name: "attribute_id",
-  //       referencedColumnName: "id"
-  //     },
-  //     inverseJoinColumn: {
-  //       name: "category_id",
-  //       referencedColumnName: "id"
-  //     }
-  //   })
-  // "categories": Category[];
-  // @ManyToMany(() => Categories, (categories) => categories.attributes)
   @ManyToMany(() => Categories)
   @JoinTable({
     name: "attributes_categories",
